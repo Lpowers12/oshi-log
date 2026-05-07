@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#ec4899">
+<title>MY押しログ</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+    background: #fdf2f8;
+    color: #1f2937;
+    line-height: 1.4;
+    font-size: 14px;
+    overflow-x: hidden;
+  }
+
+  /* ========== ヘッダー ========== */
+  .app-header {
+    background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%);
+    color: #fff;
+    padding: 12px 16px 10px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(168, 85, 247, 0.2);
+  }
+  .app-header h1 {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .app-header h1 .heart { display: inline-block; transform: scale(1.1); }
+  .app-header .sub { font-size: 10px; opacity: 0.9; margin-top: 1px; }
+
+  /* ========== コンテナ ========== */
+  .container { max-width: 480px; margin: 0 auto; padding: 10px; }
+
+  /* ========== ビュー ========== */
+  .view { display: none; }
+  .view.active { display: block; animation: fadeIn 0.2s; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  /* ========== カード ========== */
+  .card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 12px;
+    box-shadow: 0 1px 4px rgba(236, 72, 153, 0.08);
+    margin-bottom: 10px;
+  }
+
+  /* ========== ボタン ========== */
+  .btn {
+    border: none;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.1s;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary {
+    background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%);
+    color: #fff;
+    box-shadow: 0 3px 10px rgba(236, 72, 153, 0.3);
+  }
+  .btn-secondary { background: #f3f4f6; color: #374151; }
+  .btn-danger { background: #fee2e2; color: #b91c1c; }
+  .btn-block { width: 100%; }
+  .btn-sm { padding: 7px 12px; font-size: 12px; border-radius: 8px; }
+
+  /* ========== フォーム ========== */
+  .field { margin-bottom: 10px; }
+  .field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: #6b7280;
+    margin-bottom: 4px;
+  }
+  .field label .req { color: #ec4899; }
+  .input, .textarea, .select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid #fce7f3;
+    border-radius: 10px;
+    font-size: 14px;
+    background: #fff;
+    font-family: inherit;
+  }
+  .input:focus, .textarea:focus, .select:focus {
+    outline: none;
+    border-color: #ec4899;
+    box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.15);
+  }
+  .textarea { resize: vertical; min-height: 60px; }
+
+  /* ========== 写真アップローダー ========== */
+  .photo-uploader {
+    border: 2px dashed #f9a8d4;
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+    background: #fdf2f8;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .photo-uploader:hover { background: #fce7f3; }
+  .photo-uploader .icon { font-size: 22px; }
+  .photo-uploader .hint { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+  .photo-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .photo-preview {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #f3f4f6;
+  }
+  .photo-preview img { width: 100%; height: 100%; object-fit: cover; }
+  .photo-preview .remove {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.7);
+    color: #fff;
+    border: none;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  /* ========== タイムライン投稿カード ========== */
+  .post {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 4px rgba(236, 72, 153, 0.08);
+  }
+  .post-header {
+    padding: 12px 14px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .post-oshi {
+    background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .post-date { font-size: 12px; color: #9ca3af; }
+  .post-tour {
+    padding: 0 14px 4px;
+    font-size: 13px;
+    color: #be185d;
+    font-weight: 600;
+  }
+  .post-venue {
+    padding: 0 14px 8px;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .post-photos {
+    display: grid;
+    gap: 2px;
+  }
+  .post-photos.count-1 { grid-template-columns: 1fr; }
+  .post-photos.count-2 { grid-template-columns: 1fr 1fr; }
+  .post-photos.count-3plus { grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; }
+  .post-photos.count-3plus img:first-child { grid-row: span 2; }
+  .post-photos img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    cursor: pointer;
+  }
+  .post-photos.count-1 img { aspect-ratio: 4/3; }
+  .post-comment { padding: 12px 14px; font-size: 14px; line-height: 1.6; white-space: pre-wrap; }
+  .post-actions {
+    padding: 0 14px 12px;
+    display: flex;
+    gap: 6px;
+  }
+
+  /* ========== 推しチップ ========== */
+  .oshi-chip-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .oshi-chip {
+    background: #fce7f3;
+    color: #be185d;
+    padding: 6px 12px;
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 2px solid transparent;
+  }
+  .oshi-chip.selected {
+    background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%);
+    color: #fff;
+  }
+  .oshi-chip-add {
+    background: #fff;
+    color: #ec4899;
+    border: 2px dashed #f9a8d4;
+  }
+
+  /* ========== 推し管理ページ ========== */
+  .oshi-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 1px 3px rgba(236, 72, 153, 0.08);
+  }
+  .oshi-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .oshi-info { flex: 1; min-width: 0; }
+  .oshi-name { font-weight: 700; font-size: 15px; }
+  .oshi-stats { font-size: 12px; color: #6b7280; margin-top: 2px; }
+
+  /* ========== トップナビ ========== */
+  .top-nav {
+    position: sticky;
+    top: 0;
+    background: #fff;
+    border-bottom: 1px solid #fce7f3;
+    display: flex;
+    justify-content: space-around;
+    padding: 6px 4px;
+    z-index: 49;
+    max-width: 480px;
+    margin: 0 auto;
+    box-shadow: 0 2px 4px rgba(236, 72, 153, 0.06);
+  }
+  .nav-btn {
+    background: none;
+    border: none;
+    flex: 1;
+    padding: 8px 2px;
+    cursor: pointer;
+    font-family: inherit;
+    color: #9ca3af;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    font-size: 10px;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: background 0.15s;
+  }
+  .nav-btn .nav-icon { font-size: 18px; line-height: 1; }
+  .nav-btn.active {
+    color: #ec4899;
+    background: #fdf2f8;
+  }
+
+  /* ========== モーダル/ライトボックス ========== */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.9);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .lightbox.show { display: flex; }
+  .lightbox img { max-width: 100%; max-height: 90vh; object-fit: contain; }
+  .lightbox .close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+  }
+
+  /* ========== 統計カード ========== */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .stat-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 8px 6px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(236, 72, 153, 0.08);
+  }
+  .stat-num {
+    font-size: 18px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .stat-label { font-size: 10px; color: #6b7280; margin-top: 1px; }
+
+  /* ========== 空の状態 ========== */
+  .empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #9ca3af;
+  }
+  .empty .emoji { font-size: 48px; margin-bottom: 12px; }
+  .empty .msg { font-size: 14px; margin-bottom: 16px; }
+
+  /* ========== トースト ========== */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #1f2937;
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 22px;
+    font-size: 13px;
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+    z-index: 300;
+    white-space: nowrap;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ========== みんなの現場（モック）バッジ ========== */
+  .mock-badge {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    margin-bottom: 12px;
+    border-left: 3px solid #f59e0b;
+  }
+  .other-user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .other-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #c084fc, #f472b6);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .other-name { font-size: 13px; font-weight: 600; }
+
+  /* ========== 戻るボタン ========== */
+  .back-btn {
+    background: none;
+    border: none;
+    color: #ec4899;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 8px 0;
+    margin-bottom: 8px;
+    font-family: inherit;
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <h1>MY押しログ <span class="heart">💗</span></h1>
+  <div class="sub">大切な現場の記憶を残そう</div>
+</header>
+
+<!-- トップナビ -->
+<nav class="top-nav">
+  <button class="nav-btn active" data-view="timeline">
+    <span class="nav-icon">🏠</span>
+    <span>タイムライン</span>
+  </button>
+  <button class="nav-btn" data-view="oshi">
+    <span class="nav-icon">⭐</span>
+    <span>推し</span>
+  </button>
+  <button class="nav-btn" data-view="add">
+    <span class="nav-icon">＋</span>
+    <span>記録</span>
+  </button>
+  <button class="nav-btn" data-view="community">
+    <span class="nav-icon">🌸</span>
+    <span>みんな</span>
+  </button>
+  <button class="nav-btn" data-view="settings">
+    <span class="nav-icon">⚙️</span>
+    <span>設定</span>
+  </button>
+</nav>
+
+<!-- ============================== -->
+<!-- タイムライン -->
+<!-- ============================== -->
+<div class="view active" id="timelineView">
+  <div class="container">
+    <div class="stats-grid" id="statsGrid"></div>
+    <div id="timelineList"></div>
+  </div>
+</div>
+
+<!-- ============================== -->
+<!-- 推し管理 -->
+<!-- ============================== -->
+<div class="view" id="oshiView">
+  <div class="container">
+    <div class="card">
+      <div style="display:flex; gap:8px;">
+        <input type="text" class="input" id="newOshiName" placeholder="推しの名前を追加" style="flex:1;">
+        <button class="btn btn-primary" id="addOshiBtn">追加</button>
+      </div>
+    </div>
+    <div id="oshiList"></div>
+  </div>
+</div>
+
+<!-- ============================== -->
+<!-- 記録追加 -->
+<!-- ============================== -->
+<div class="view" id="addView">
+  <div class="container">
+    <div class="card">
+      <h2 style="font-size:16px; margin-bottom:14px; color:#374151;">現場を記録する</h2>
+
+      <input type="hidden" id="editingId" value="">
+
+      <div class="field">
+        <label>推し<span class="req">*</span></label>
+        <div class="oshi-chip-list" id="oshiChipList"></div>
+      </div>
+
+      <div class="field">
+        <label>現場日<span class="req">*</span></label>
+        <input type="date" class="input" id="eventDatetime">
+      </div>
+
+      <div class="field">
+        <label>ツアー名</label>
+        <input type="text" class="input" id="eventTour" placeholder="例：○○ TOUR 2026 〜LOVE〜" list="tourList">
+        <datalist id="tourList"></datalist>
+      </div>
+
+      <div class="field">
+        <label>場所（会場名）<span class="req">*</span></label>
+        <input type="text" class="input" id="eventVenue" placeholder="例：東京ドーム / Zepp DiverCity" list="venueList">
+        <datalist id="venueList"></datalist>
+      </div>
+
+      <div class="field">
+        <label>写真</label>
+        <input type="file" id="photoInput" accept="image/*" multiple style="display:none;">
+        <div class="photo-uploader" id="photoUploader">
+          <div class="icon">📷</div>
+          <div style="font-size:13px; font-weight:600; color:#ec4899; margin-top:4px;">タップして写真を追加</div>
+          <div class="hint">複数選択OK / 自動でリサイズされます</div>
+        </div>
+        <div class="photo-preview-grid" id="photoPreview"></div>
+      </div>
+
+      <div class="field">
+        <label>コメント・感想</label>
+        <textarea class="textarea" id="eventComment" placeholder="今日の現場どうだった？ MCで言ってたこと・印象的な瞬間など…"></textarea>
+      </div>
+
+      <button class="btn btn-primary btn-block" id="saveBtn" style="margin-top:8px;">保存する</button>
+      <button class="btn btn-secondary btn-block" id="cancelEditBtn" style="margin-top:8px; display:none;">編集をキャンセル</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== -->
+<!-- みんなの現場（モック） -->
+<!-- ============================== -->
+<div class="view" id="communityView">
+  <div class="container">
+    <div class="mock-badge">
+      <strong>※ 共有機能はモックアップ表示です</strong><br>
+      実装時はクラウドDB連携で他ユーザーの実際の投稿が表示されます
+    </div>
+    <div id="communityList"></div>
+  </div>
+</div>
+
+<!-- ============================== -->
+<!-- 設定 -->
+<!-- ============================== -->
+<div class="view" id="settingsView">
+  <div class="container">
+    <div class="card">
+      <h2 style="font-size:15px; margin-bottom:12px;">データ管理</h2>
+      <button class="btn btn-secondary btn-block" id="exportDataBtn" style="margin-bottom:8px;">バックアップ（JSONエクスポート）</button>
+      <button class="btn btn-secondary btn-block" id="importDataBtn" style="margin-bottom:8px;">復元（JSONインポート）</button>
+      <input type="file" id="importFile" accept=".json" style="display:none;">
+      <button class="btn btn-secondary btn-block" id="seedBtn" style="margin-bottom:8px;">サンプルデータを投入</button>
+      <button class="btn btn-danger btn-block" id="clearAllBtn">全データを削除</button>
+    </div>
+    <div class="card">
+      <h2 style="font-size:15px; margin-bottom:8px;">このアプリについて</h2>
+      <p style="font-size:13px; color:#6b7280; line-height:1.7;">
+        押し活の現場記録アプリ（デモ版）。<br>
+        データはこのブラウザ内にのみ保存されます。<br>
+        他ユーザーとの共有機能を実装する場合は、クラウド連携が必要です。
+      </p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ライトボックス -->
+<div class="lightbox" id="lightbox">
+  <button class="close" onclick="document.getElementById('lightbox').classList.remove('show')">×</button>
+  <img id="lightboxImg" src="" alt="">
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const REC_KEY = 'oshi_records_v1';
+const OSHI_KEY = 'oshi_list_v1';
+
+let records = JSON.parse(localStorage.getItem(REC_KEY) || '[]');
+let oshiList = JSON.parse(localStorage.getItem(OSHI_KEY) || '[]');
+let currentPhotos = []; // 編集中の写真（base64配列）
+let selectedOshi = null;
+
+const saveRec = () => localStorage.setItem(REC_KEY, JSON.stringify(records));
+const saveOshi = () => localStorage.setItem(OSHI_KEY, JSON.stringify(oshiList));
+
+const pad = n => String(n).padStart(2, '0');
+const escapeHtml = s => String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const fmtDate = (iso) => {
+  if (!iso) return '';
+  // YYYY-MM-DD or ISO datetime
+  const datePart = iso.length >= 10 ? iso.slice(0, 10) : iso;
+  const [y, m, d] = datePart.split('-');
+  if (!y) return iso;
+  return `${y}/${m}/${d}`;
+};
+const todayLocal = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+};
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ========== ナビゲーション ==========
+function switchView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(name + 'View').classList.add('active');
+  document.querySelector(`.nav-btn[data-view="${name}"]`).classList.add('active');
+  window.scrollTo(0, 0);
+  if (name === 'timeline') renderTimeline();
+  if (name === 'oshi') renderOshiPage();
+  if (name === 'add') prepareAddForm();
+  if (name === 'community') renderCommunity();
+}
+document.querySelectorAll('.nav-btn').forEach(btn => {
+  btn.addEventListener('click', () => switchView(btn.dataset.view));
+});
+
+// ========== 推し管理 ==========
+function renderOshiPage() {
+  const el = document.getElementById('oshiList');
+  if (oshiList.length === 0) {
+    el.innerHTML = `<div class="empty"><div class="emoji">⭐</div><div class="msg">推しを追加して始めよう</div></div>`;
+    return;
+  }
+  el.innerHTML = oshiList.map(name => {
+    const count = records.filter(r => r.oshi === name).length;
+    const last = records.filter(r => r.oshi === name).sort((a,b) => b.datetime.localeCompare(a.datetime))[0];
+    const initial = name.charAt(0);
+    return `
+      <div class="oshi-card">
+        <div class="oshi-avatar">${escapeHtml(initial)}</div>
+        <div class="oshi-info">
+          <div class="oshi-name">${escapeHtml(name)}</div>
+          <div class="oshi-stats">
+            参戦${count}回${last ? ' / 最新：' + fmtDate(last.datetime).slice(0,10) : ''}
+          </div>
+        </div>
+        <button class="btn btn-danger btn-sm" onclick="removeOshi('${escapeHtml(name).replace(/'/g, "\\'")}')">削除</button>
+      </div>
+    `;
+  }).join('');
+}
+
+function removeOshi(name) {
+  if (!confirm(`「${name}」を削除しますか？\n（過去の記録は残ります）`)) return;
+  oshiList = oshiList.filter(n => n !== name);
+  saveOshi();
+  renderOshiPage();
+  showToast('削除しました');
+}
+window.removeOshi = removeOshi;
+
+document.getElementById('addOshiBtn').addEventListener('click', () => {
+  const v = document.getElementById('newOshiName').value.trim();
+  if (!v) return;
+  if (oshiList.includes(v)) { showToast('既に登録されています'); return; }
+  oshiList.push(v);
+  saveOshi();
+  document.getElementById('newOshiName').value = '';
+  renderOshiPage();
+  showToast('追加しました 💗');
+});
+document.getElementById('newOshiName').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('addOshiBtn').click();
+});
+
+// ========== 記録追加 ==========
+function prepareAddForm() {
+  // 既に編集中ならそのまま、新規ならリセット
+  if (!document.getElementById('editingId').value) {
+    document.getElementById('eventDatetime').value = todayLocal();
+  }
+  renderOshiChips();
+  refreshVenueList();
+}
+
+function renderOshiChips() {
+  const el = document.getElementById('oshiChipList');
+  const chips = oshiList.map(name => `
+    <div class="oshi-chip ${selectedOshi === name ? 'selected' : ''}"
+         onclick="selectOshi('${escapeHtml(name).replace(/'/g, "\\'")}')">
+      ${escapeHtml(name)}
+    </div>
+  `).join('');
+  el.innerHTML = chips + `
+    <div class="oshi-chip oshi-chip-add" onclick="addOshiInline()">＋ 追加</div>
+  `;
+}
+function selectOshi(name) {
+  selectedOshi = name;
+  renderOshiChips();
+}
+function addOshiInline() {
+  const name = prompt('推しの名前を入力してください');
+  if (!name) return;
+  const trimmed = name.trim();
+  if (!trimmed) return;
+  if (!oshiList.includes(trimmed)) {
+    oshiList.push(trimmed);
+    saveOshi();
+  }
+  selectedOshi = trimmed;
+  renderOshiChips();
+}
+window.selectOshi = selectOshi;
+window.addOshiInline = addOshiInline;
+
+function refreshVenueList() {
+  const venues = [...new Set(records.map(r => r.venue))].filter(Boolean);
+  document.getElementById('venueList').innerHTML = venues.map(v => `<option value="${escapeHtml(v)}">`).join('');
+  const tours = [...new Set(records.map(r => r.tour))].filter(Boolean);
+  document.getElementById('tourList').innerHTML = tours.map(t => `<option value="${escapeHtml(t)}">`).join('');
+}
+
+// 写真アップロード
+document.getElementById('photoUploader').addEventListener('click', () => {
+  document.getElementById('photoInput').click();
+});
+document.getElementById('photoInput').addEventListener('change', async e => {
+  const files = Array.from(e.target.files);
+  for (const file of files) {
+    try {
+      const dataUrl = await resizeImage(file, 1200, 0.75);
+      currentPhotos.push(dataUrl);
+    } catch (err) {
+      console.error(err);
+      showToast('画像の読み込みに失敗しました');
+    }
+  }
+  renderPhotoPreview();
+  e.target.value = '';
+});
+
+function resizeImage(file, maxSize, quality) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let w = img.width, h = img.height;
+        if (w > h && w > maxSize) { h = h * maxSize / w; w = maxSize; }
+        else if (h > maxSize) { w = w * maxSize / h; h = maxSize; }
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderPhotoPreview() {
+  const el = document.getElementById('photoPreview');
+  el.innerHTML = currentPhotos.map((p, i) => `
+    <div class="photo-preview">
+      <img src="${p}" alt="" onclick="openLightbox('${i}', true)">
+      <button class="remove" onclick="removePhoto(${i})">×</button>
+    </div>
+  `).join('');
+}
+
+function removePhoto(i) {
+  currentPhotos.splice(i, 1);
+  renderPhotoPreview();
+}
+window.removePhoto = removePhoto;
+
+function openLightbox(idx, fromPreview) {
+  const src = fromPreview ? currentPhotos[idx] : idx;
+  document.getElementById('lightboxImg').src = src;
+  document.getElementById('lightbox').classList.add('show');
+}
+window.openLightbox = openLightbox;
+
+document.getElementById('saveBtn').addEventListener('click', () => {
+  if (!selectedOshi) { showToast('推しを選択してください'); return; }
+  const datetime = document.getElementById('eventDatetime').value;
+  const tour = document.getElementById('eventTour').value.trim();
+  const venue = document.getElementById('eventVenue').value.trim();
+  const comment = document.getElementById('eventComment').value.trim();
+  if (!datetime) { showToast('現場日を入力してください'); return; }
+  if (!venue) { showToast('場所を入力してください'); return; }
+
+  const editingId = document.getElementById('editingId').value;
+  const data = {
+    id: editingId || uid(),
+    oshi: selectedOshi,
+    datetime,
+    tour,
+    venue,
+    photos: [...currentPhotos],
+    comment,
+    createdAt: editingId ? records.find(r => r.id === editingId)?.createdAt : new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
+  try {
+    if (editingId) {
+      const i = records.findIndex(r => r.id === editingId);
+      if (i >= 0) records[i] = data;
+      showToast('更新しました 💗');
+    } else {
+      records.push(data);
+      showToast('保存しました 💗');
+    }
+    saveRec();
+    resetAddForm();
+    switchView('timeline');
+  } catch (err) {
+    if (err.name === 'QuotaExceededError') {
+      showToast('保存容量がいっぱいです。古い記録を削除してください');
+    } else {
+      showToast('保存に失敗しました');
+    }
+  }
+});
+
+document.getElementById('cancelEditBtn').addEventListener('click', () => {
+  resetAddForm();
+  switchView('timeline');
+});
+
+function resetAddForm() {
+  document.getElementById('editingId').value = '';
+  document.getElementById('eventDatetime').value = todayLocal();
+  document.getElementById('eventTour').value = '';
+  document.getElementById('eventVenue').value = '';
+  document.getElementById('eventComment').value = '';
+  selectedOshi = null;
+  currentPhotos = [];
+  renderPhotoPreview();
+  document.getElementById('cancelEditBtn').style.display = 'none';
+  document.getElementById('saveBtn').textContent = '保存する';
+}
+
+function editRecord(id) {
+  const r = records.find(x => x.id === id);
+  if (!r) return;
+  document.getElementById('editingId').value = r.id;
+  selectedOshi = r.oshi;
+  // 旧形式（datetime-local）も対応
+  document.getElementById('eventDatetime').value = (r.datetime || '').slice(0, 10);
+  document.getElementById('eventTour').value = r.tour || '';
+  document.getElementById('eventVenue').value = r.venue;
+  document.getElementById('eventComment').value = r.comment || '';
+  currentPhotos = [...(r.photos || [])];
+  document.getElementById('cancelEditBtn').style.display = 'block';
+  document.getElementById('saveBtn').textContent = '更新する';
+  switchView('add');
+}
+window.editRecord = editRecord;
+
+function deleteRecord(id) {
+  if (!confirm('この記録を削除しますか？')) return;
+  records = records.filter(r => r.id !== id);
+  saveRec();
+  renderTimeline();
+  showToast('削除しました');
+}
+window.deleteRecord = deleteRecord;
+
+// ========== タイムライン ==========
+function renderTimeline() {
+  // 統計
+  const totalEvents = records.length;
+  const uniqueOshi = new Set(records.map(r => r.oshi)).size;
+  const uniqueVenues = new Set(records.map(r => r.venue)).size;
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card"><div class="stat-num">${totalEvents}</div><div class="stat-label">参戦回数</div></div>
+    <div class="stat-card"><div class="stat-num">${uniqueOshi}</div><div class="stat-label">推し</div></div>
+    <div class="stat-card"><div class="stat-num">${uniqueVenues}</div><div class="stat-label">会場</div></div>
+  `;
+
+  const list = document.getElementById('timelineList');
+  if (records.length === 0) {
+    list.innerHTML = `
+      <div class="empty">
+        <div class="emoji">🎤</div>
+        <div class="msg">まだ記録がありません<br>初めての現場を記録してみよう</div>
+        <button class="btn btn-primary" onclick="switchView('add')">記録を追加</button>
+      </div>
+    `;
+    return;
+  }
+  const sorted = [...records].sort((a,b) => b.datetime.localeCompare(a.datetime));
+  list.innerHTML = sorted.map(r => renderPostCard(r)).join('');
+}
+
+function renderPostCard(r) {
+  const photoCount = (r.photos || []).length;
+  let photosHtml = '';
+  if (photoCount > 0) {
+    const cls = photoCount === 1 ? 'count-1' : photoCount === 2 ? 'count-2' : 'count-3plus';
+    const showPhotos = r.photos.slice(0, 3);
+    photosHtml = `
+      <div class="post-photos ${cls}">
+        ${showPhotos.map(p => `<img src="${p}" alt="" onclick="openLightbox('${p}', false)">`).join('')}
+      </div>
+      ${photoCount > 3 ? `<div style="text-align:right; padding:4px 14px; font-size:11px; color:#9ca3af;">他 ${photoCount - 3} 枚</div>` : ''}
+    `;
+  }
+  return `
+    <div class="post">
+      <div class="post-header">
+        <span class="post-oshi">⭐ ${escapeHtml(r.oshi)}</span>
+        <span class="post-date">${fmtDate(r.datetime)}</span>
+      </div>
+      ${r.tour ? `<div class="post-tour">🎤 ${escapeHtml(r.tour)}</div>` : ''}
+      <div class="post-venue">📍 ${escapeHtml(r.venue)}</div>
+      ${photosHtml}
+      ${r.comment ? `<div class="post-comment">${escapeHtml(r.comment)}</div>` : ''}
+      <div class="post-actions">
+        <button class="btn btn-secondary btn-sm" onclick="editRecord('${r.id}')">編集</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteRecord('${r.id}')">削除</button>
+      </div>
+    </div>
+  `;
+}
+
+// ========== みんなの現場（モック） ==========
+function renderCommunity() {
+  const el = document.getElementById('communityList');
+  // 自分が参加した会場と同じ会場のモック投稿を生成
+  const myVenues = [...new Set(records.map(r => r.venue))];
+
+  let mockPosts = [
+    {
+      user: 'ゆいぴ', avatar: 'ゆ',
+      oshi: '推し名様', venue: myVenues[0] || 'Zepp DiverCity',
+      datetime: '2026-04-28T18:30',
+      comment: '今日の現場最高だった〜！MCで○○の話してくれて泣きそうになった😭\nセトリ完璧すぎでしたね！'
+    },
+    {
+      user: 'まりんご', avatar: 'ま',
+      oshi: '推し名様', venue: myVenues[0] || 'Zepp DiverCity',
+      datetime: '2026-04-28T19:00',
+      comment: '初現場でしたが、めちゃくちゃ良かった！\n隣の方に教えてもらいながら楽しめました🌸'
+    },
+    {
+      user: 'のぞみ＊', avatar: 'の',
+      oshi: '別の推し', venue: myVenues[1] || '東京ドーム',
+      datetime: '2026-04-25T17:00',
+      comment: 'ドーム公演ありがとうーー！\n最後の挨拶で号泣でした😭🎤✨'
+    }
+  ];
+
+  if (myVenues.length === 0) {
+    el.innerHTML = `
+      <div class="empty">
+        <div class="emoji">🌸</div>
+        <div class="msg">まずは自分の現場を記録してみよう<br>同じ会場に行った人の投稿が表示されます</div>
+      </div>
+    `;
+    return;
+  }
+
+  el.innerHTML = mockPosts.map(p => `
+    <div class="post">
+      <div class="post-header">
+        <div class="other-user">
+          <div class="other-avatar">${escapeHtml(p.avatar)}</div>
+          <div>
+            <div class="other-name">${escapeHtml(p.user)}</div>
+            <div style="font-size:11px; color:#9ca3af;">${fmtDate(p.datetime)}</div>
+          </div>
+        </div>
+        <span class="post-oshi">⭐ ${escapeHtml(p.oshi)}</span>
+      </div>
+      <div class="post-venue">📍 ${escapeHtml(p.venue)} ${myVenues.includes(p.venue) ? '<span style="font-size:11px; color:#ec4899; margin-left:4px;">同じ現場！</span>' : ''}</div>
+      <div class="post-comment">${escapeHtml(p.comment)}</div>
+      <div class="post-actions">
+        <button class="btn btn-secondary btn-sm">💗 いいね</button>
+        <button class="btn btn-secondary btn-sm">💬 コメント</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ========== 設定 ==========
+document.getElementById('exportDataBtn').addEventListener('click', () => {
+  const data = { records, oshiList, exportedAt: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `推し活ログ_バックアップ_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('バックアップしました');
+});
+
+document.getElementById('importDataBtn').addEventListener('click', () => {
+  document.getElementById('importFile').click();
+});
+document.getElementById('importFile').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!Array.isArray(data.records)) throw new Error('形式が不正');
+      if (!confirm(`${data.records.length}件の記録を追加します。よろしいですか？`)) return;
+      const ids = new Set(records.map(r => r.id));
+      data.records.forEach(r => { if (!ids.has(r.id)) records.push(r); });
+      (data.oshiList || []).forEach(o => { if (!oshiList.includes(o)) oshiList.push(o); });
+      saveRec(); saveOshi();
+      renderTimeline();
+      showToast('インポートしました');
+    } catch (err) {
+      alert('インポートに失敗しました: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+document.getElementById('seedBtn').addEventListener('click', () => {
+  if (!confirm('サンプルデータを投入します。よろしいですか？')) return;
+  const sampleOshi = ['Mai-K', 'STAR★LIGHTS', 'りな'];
+  sampleOshi.forEach(o => { if (!oshiList.includes(o)) oshiList.push(o); });
+  const samples = [
+    { oshi: 'Mai-K', datetime: '2026-04-15', tour: 'Mai-K LIVE TOUR 2026 〜LOVE & SHINE〜', venue: 'Zepp DiverCity', comment: '初日ありがとう！\nアンコールで新曲披露あって最高でした😭' },
+    { oshi: 'STAR★LIGHTS', datetime: '2026-03-20', tour: 'STAR★LIGHTS Dome Tour 2026', venue: '東京ドーム', comment: 'ドーム公演！光の演出が綺麗すぎた✨\nペンライトの色を全色合わせるの楽しかった🎀' },
+    { oshi: 'りな', datetime: '2026-02-10', tour: '春の対バンツアー2026', venue: 'TSUTAYA O-EAST', comment: '対バン久々参戦！\n声出しOKでめちゃくちゃ盛り上がりました🔥' }
+  ];
+  samples.forEach(s => {
+    records.push({
+      id: uid(), ...s, photos: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
+  });
+  saveRec(); saveOshi();
+  renderTimeline();
+  switchView('timeline');
+  showToast('サンプルデータを投入しました');
+});
+
+document.getElementById('clearAllBtn').addEventListener('click', () => {
+  if (!confirm('全データを削除します。よろしいですか？')) return;
+  if (!confirm('本当に削除しますか？この操作は元に戻せません。')) return;
+  records = []; oshiList = [];
+  saveRec(); saveOshi();
+  renderTimeline();
+  showToast('削除しました');
+});
+
+window.switchView = switchView;
+
+// 初期化
+renderTimeline();
+</script>
+</body>
+</html>
