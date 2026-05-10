@@ -1,54 +1,166 @@
-<!DOCTYPE html>　
+<!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MY押しログ">
 <meta name="theme-color" content="#ec4899">
+<meta name="description" content="ライブ・現場の記録を残す、押し活専用ログアプリ">
 <title>MY押しログ</title>
+<link rel="manifest" href='data:application/json;charset=utf-8,{"name":"MY%E6%8A%BC%E3%81%97%E3%83%AD%E3%82%B0","short_name":"MY%E6%8A%BC%E3%81%97%E3%83%AD%E3%82%B0","start_url":".","display":"standalone","background_color":"%23fdf2f8","theme_color":"%23ec4899","icons":[{"src":"data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 192 192%22><defs><linearGradient id=%22g%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22><stop offset=%220%22 stop-color=%22%23ec4899%22/><stop offset=%221%22 stop-color=%22%23a855f7%22/></linearGradient></defs><rect width=%22192%22 height=%22192%22 rx=%2240%22 fill=%22url(%23g)%22/><text x=%2296%22 y=%22130%22 font-size=%22120%22 text-anchor=%22middle%22 fill=%22white%22>%F0%9F%92%97</text></svg>","sizes":"192x192","type":"image/svg+xml"}]}'>
+<link rel="apple-touch-icon" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="%23ec4899"/><stop offset="1" stop-color="%23a855f7"/></linearGradient></defs><rect width="192" height="192" rx="40" fill="url(%23g)"/><text x="96" y="130" font-size="120" text-anchor="middle" fill="white">💗</text></svg>'>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
+  :root {
+    --pink: #ec4899;
+    --pink-light: #fce7f3;
+    --pink-bg: #fdf2f8;
+    --purple: #a855f7;
+    --grad: linear-gradient(135deg, #ec4899 0%, #a855f7 100%);
+    --grad-soft: linear-gradient(135deg, #fce7f3 0%, #f3e8ff 100%);
+    --text: #1f2937;
+    --text-muted: #6b7280;
+    --border: #f3e8f3;
+    --shadow: 0 1px 3px rgba(236, 72, 153, 0.08);
+    --shadow-lg: 0 4px 16px rgba(168, 85, 247, 0.15);
+  }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html { scroll-behavior: smooth; }
   html, body { height: 100%; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
-    background: #fdf2f8;
-    color: #1f2937;
-    line-height: 1.4;
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", "Helvetica Neue", sans-serif;
+    background: var(--pink-bg);
+    color: var(--text);
+    line-height: 1.5;
     font-size: 14px;
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ========== スプラッシュ ========== */
+  #splash {
+    position: fixed; inset: 0;
+    background: var(--grad);
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 16px;
+    z-index: 1000;
+    transition: opacity 0.5s 0.3s, visibility 0.5s 0.3s;
+  }
+  #splash.hidden { opacity: 0; visibility: hidden; }
+  #splash .logo {
+    font-size: 56px;
+    animation: heartbeat 1.4s infinite;
+  }
+  #splash .name { color: #fff; font-size: 24px; font-weight: 800; letter-spacing: 1px; }
+  #splash .tagline { color: rgba(255,255,255,0.85); font-size: 12px; }
+  @keyframes heartbeat {
+    0%, 50%, 100% { transform: scale(1); }
+    25% { transform: scale(1.15); }
+    75% { transform: scale(1.05); }
   }
 
   /* ========== ヘッダー ========== */
   .app-header {
-    background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%);
+    background: var(--grad);
     color: #fff;
-    padding: 12px 16px 10px;
+    padding: 14px 16px 12px;
     text-align: center;
     box-shadow: 0 2px 8px rgba(168, 85, 247, 0.2);
+    position: relative;
+    overflow: hidden;
+  }
+  .app-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.15), transparent 50%);
+    pointer-events: none;
   }
   .app-header h1 {
-    font-size: 16px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    position: relative;
   }
-  .app-header h1 .heart { display: inline-block; transform: scale(1.1); }
-  .app-header .sub { font-size: 10px; opacity: 0.9; margin-top: 1px; }
+  .app-header h1 .heart {
+    display: inline-block;
+    animation: heartbeat 2s infinite;
+  }
+  .app-header .sub { font-size: 10px; opacity: 0.9; margin-top: 2px; letter-spacing: 0.3px; }
+
+  /* ========== トップナビ ========== */
+  .top-nav {
+    position: sticky;
+    top: 0;
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    padding: 6px 4px;
+    z-index: 49;
+    max-width: 480px;
+    margin: 0 auto;
+    box-shadow: 0 2px 4px rgba(236, 72, 153, 0.06);
+    backdrop-filter: blur(8px);
+  }
+  .nav-btn {
+    background: none;
+    border: none;
+    flex: 1;
+    padding: 8px 2px;
+    cursor: pointer;
+    font-family: inherit;
+    color: #9ca3af;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    font-size: 10px;
+    font-weight: 600;
+    border-radius: 10px;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .nav-btn .nav-icon { font-size: 18px; line-height: 1; }
+  .nav-btn.active { color: var(--pink); background: var(--pink-bg); }
+  .nav-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -7px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 14px;
+    height: 2px;
+    background: var(--grad);
+    border-radius: 2px;
+  }
 
   /* ========== コンテナ ========== */
-  .container { max-width: 480px; margin: 0 auto; padding: 10px; }
-
-  /* ========== ビュー ========== */
-  .view { display: none; }
-  .view.active { display: block; animation: fadeIn 0.2s; }
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .container { max-width: 480px; margin: 0 auto; padding: 12px; }
+  .view { display: none; animation: fadeUp 0.25s ease-out; }
+  .view.active { display: block; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 
   /* ========== カード ========== */
   .card {
     background: #fff;
-    border-radius: 14px;
-    padding: 12px;
-    box-shadow: 0 1px 4px rgba(236, 72, 153, 0.08);
-    margin-bottom: 10px;
+    border-radius: 16px;
+    padding: 14px;
+    box-shadow: var(--shadow);
+    margin-bottom: 12px;
+  }
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
 
   /* ========== ボタン ========== */
@@ -57,60 +169,70 @@
     border-radius: 10px;
     padding: 10px 16px;
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
     font-family: inherit;
-    transition: transform 0.1s;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
   }
-  .btn:active { transform: scale(0.97); }
+  .btn:active { transform: scale(0.96); }
   .btn-primary {
-    background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%);
+    background: var(--grad);
     color: #fff;
     box-shadow: 0 3px 10px rgba(236, 72, 153, 0.3);
   }
   .btn-secondary { background: #f3f4f6; color: #374151; }
+  .btn-soft { background: var(--pink-bg); color: var(--pink); }
   .btn-danger { background: #fee2e2; color: #b91c1c; }
+  .btn-ghost { background: transparent; color: var(--pink); }
   .btn-block { width: 100%; }
-  .btn-sm { padding: 7px 12px; font-size: 12px; border-radius: 8px; }
+  .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 8px; }
+  .btn-lg { padding: 14px 24px; font-size: 15px; }
 
   /* ========== フォーム ========== */
-  .field { margin-bottom: 10px; }
+  .field { margin-bottom: 12px; }
   .field label {
     display: block;
     font-size: 11px;
-    font-weight: 600;
-    color: #6b7280;
+    font-weight: 700;
+    color: var(--text-muted);
     margin-bottom: 4px;
+    letter-spacing: 0.3px;
   }
-  .field label .req { color: #ec4899; }
+  .field label .req { color: var(--pink); }
   .input, .textarea, .select {
     width: 100%;
-    padding: 10px 12px;
-    border: 1.5px solid #fce7f3;
+    padding: 11px 13px;
+    border: 1.5px solid var(--pink-light);
     border-radius: 10px;
     font-size: 14px;
     background: #fff;
     font-family: inherit;
+    color: var(--text);
+    transition: all 0.15s;
   }
   .input:focus, .textarea:focus, .select:focus {
     outline: none;
-    border-color: #ec4899;
-    box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.15);
+    border-color: var(--pink);
+    box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.12);
   }
-  .textarea { resize: vertical; min-height: 60px; }
+  .textarea { resize: vertical; min-height: 70px; line-height: 1.6; }
 
-  /* ========== 写真アップローダー ========== */
+  /* ========== 写真 ========== */
   .photo-uploader {
     border: 2px dashed #f9a8d4;
     border-radius: 12px;
-    padding: 12px;
+    padding: 14px 12px;
     text-align: center;
-    background: #fdf2f8;
+    background: var(--pink-bg);
     cursor: pointer;
-    transition: background 0.15s;
+    transition: all 0.15s;
   }
-  .photo-uploader:hover { background: #fce7f3; }
-  .photo-uploader .icon { font-size: 22px; }
+  .photo-uploader:hover { background: var(--pink-light); border-color: var(--pink); }
+  .photo-uploader .icon { font-size: 24px; }
   .photo-uploader .hint { font-size: 11px; color: #9ca3af; margin-top: 2px; }
   .photo-preview-grid {
     display: grid;
@@ -141,35 +263,41 @@
     cursor: pointer;
   }
 
-  /* ========== タイムライン投稿カード ========== */
+  /* ========== 投稿カード ========== */
   .post {
     background: #fff;
     border-radius: 16px;
     overflow: hidden;
     margin-bottom: 14px;
-    box-shadow: 0 1px 4px rgba(236, 72, 153, 0.08);
+    box-shadow: var(--shadow);
+    transition: transform 0.2s, box-shadow 0.2s;
   }
+  .post:active { transform: scale(0.99); }
   .post-header {
-    padding: 12px 14px 8px;
+    padding: 12px 14px 6px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 10px;
   }
   .post-oshi {
-    background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%);
+    background: var(--grad);
     color: #fff;
-    padding: 4px 10px;
-    border-radius: 12px;
+    padding: 4px 12px;
+    border-radius: 14px;
     font-size: 12px;
     font-weight: 700;
+    box-shadow: 0 2px 6px rgba(236, 72, 153, 0.25);
   }
-  .post-date { font-size: 12px; color: #9ca3af; }
+  .post-date { font-size: 12px; color: #9ca3af; font-weight: 600; }
   .post-tour {
     padding: 0 14px 4px;
     font-size: 13px;
     color: #be185d;
-    font-weight: 600;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 4px;
   }
   .post-venue {
     padding: 0 14px 8px;
@@ -179,174 +307,320 @@
     align-items: center;
     gap: 4px;
   }
-  .post-photos {
-    display: grid;
-    gap: 2px;
-  }
+  .post-photos { display: grid; gap: 2px; }
   .post-photos.count-1 { grid-template-columns: 1fr; }
   .post-photos.count-2 { grid-template-columns: 1fr 1fr; }
-  .post-photos.count-3plus { grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; }
-  .post-photos.count-3plus img:first-child { grid-row: span 2; }
+  .post-photos.count-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .post-photos.count-4 { grid-template-columns: 1fr 1fr; }
+  .post-photos.count-many { grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; position: relative; }
+  .post-photos.count-many img:first-child { grid-row: span 2; }
   .post-photos img {
     width: 100%;
     aspect-ratio: 1;
     object-fit: cover;
     cursor: pointer;
+    background: #f3f4f6;
   }
   .post-photos.count-1 img { aspect-ratio: 4/3; }
-  .post-comment { padding: 12px 14px; font-size: 14px; line-height: 1.6; white-space: pre-wrap; }
+  .post-photos.count-many .more-overlay {
+    position: relative;
+  }
+  .post-photos.count-many .more-overlay::after {
+    content: attr(data-more);
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    pointer-events: none;
+  }
+  .post-comment {
+    padding: 12px 14px;
+    font-size: 14px;
+    line-height: 1.65;
+    white-space: pre-wrap;
+    color: #374151;
+  }
   .post-actions {
     padding: 0 14px 12px;
     display: flex;
     gap: 6px;
+    align-items: center;
+  }
+  .post-meta {
+    margin-left: auto;
+    font-size: 11px;
+    color: #9ca3af;
   }
 
-  /* ========== 推しチップ ========== */
-  .oshi-chip-list { display: flex; flex-wrap: wrap; gap: 6px; }
-  .oshi-chip {
-    background: #fce7f3;
+  /* ========== チップ ========== */
+  .chip-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    background: var(--pink-light);
     color: #be185d;
     padding: 6px 12px;
     border-radius: 14px;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
     border: 2px solid transparent;
+    transition: all 0.15s;
   }
-  .oshi-chip.selected {
-    background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%);
+  .chip.selected {
+    background: var(--grad);
     color: #fff;
+    box-shadow: 0 2px 6px rgba(236, 72, 153, 0.3);
   }
-  .oshi-chip-add {
+  .chip-add {
     background: #fff;
-    color: #ec4899;
+    color: var(--pink);
     border: 2px dashed #f9a8d4;
   }
 
-  /* ========== 推し管理ページ ========== */
+  /* ========== 検索＆フィルタ ========== */
+  .search-bar {
+    background: #fff;
+    border-radius: 12px;
+    padding: 4px 4px 4px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: var(--shadow);
+    margin-bottom: 10px;
+  }
+  .search-bar input {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 10px 0;
+    font-size: 14px;
+    font-family: inherit;
+    background: transparent;
+  }
+  .search-bar .icon { color: #9ca3af; font-size: 16px; }
+  .search-bar .clear-btn {
+    border: none;
+    background: #f3f4f6;
+    color: #6b7280;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 14px;
+    cursor: pointer;
+    display: none;
+  }
+  .search-bar.has-text .clear-btn { display: flex; align-items: center; justify-content: center; }
+
+  .filter-scroll {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    margin-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .filter-scroll::-webkit-scrollbar { display: none; }
+  .filter-chip {
+    background: #fff;
+    color: var(--text-muted);
+    border: 1.5px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 14px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .filter-chip.active {
+    background: var(--grad);
+    color: #fff;
+    border-color: transparent;
+  }
+
+  /* ========== 推し管理 ========== */
   .oshi-card {
     background: #fff;
     border-radius: 14px;
-    padding: 14px;
-    margin-bottom: 10px;
+    padding: 12px;
+    margin-bottom: 8px;
     display: flex;
     align-items: center;
     gap: 12px;
-    box-shadow: 0 1px 3px rgba(236, 72, 153, 0.08);
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: transform 0.15s;
   }
+  .oshi-card:active { transform: scale(0.98); }
   .oshi-avatar {
-    width: 50px;
-    height: 50px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%);
+    background: var(--grad);
     color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 700;
+    font-weight: 800;
     font-size: 18px;
     flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(236, 72, 153, 0.25);
   }
   .oshi-info { flex: 1; min-width: 0; }
   .oshi-name { font-weight: 700; font-size: 15px; }
-  .oshi-stats { font-size: 12px; color: #6b7280; margin-top: 2px; }
-
-  /* ========== トップナビ ========== */
-  .top-nav {
-    position: sticky;
-    top: 0;
-    background: #fff;
-    border-bottom: 1px solid #fce7f3;
-    display: flex;
-    justify-content: space-around;
-    padding: 6px 4px;
-    z-index: 49;
-    max-width: 480px;
-    margin: 0 auto;
-    box-shadow: 0 2px 4px rgba(236, 72, 153, 0.06);
-  }
-  .nav-btn {
-    background: none;
-    border: none;
-    flex: 1;
-    padding: 8px 2px;
-    cursor: pointer;
-    font-family: inherit;
-    color: #9ca3af;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    font-size: 10px;
-    font-weight: 600;
-    border-radius: 8px;
-    transition: background 0.15s;
-  }
-  .nav-btn .nav-icon { font-size: 18px; line-height: 1; }
-  .nav-btn.active {
-    color: #ec4899;
-    background: #fdf2f8;
-  }
-
-  /* ========== モーダル/ライトボックス ========== */
-  .lightbox {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.9);
-    z-index: 200;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
-  .lightbox.show { display: flex; }
-  .lightbox img { max-width: 100%; max-height: 90vh; object-fit: contain; }
-  .lightbox .close {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    background: rgba(255,255,255,0.2);
-    color: #fff;
-    border: none;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    font-size: 20px;
-    cursor: pointer;
-  }
+  .oshi-stats { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .oshi-arrow { color: #d1d5db; font-size: 18px; }
 
   /* ========== 統計カード ========== */
   .stats-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-    margin-bottom: 10px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
   }
   .stat-card {
     background: #fff;
-    border-radius: 10px;
-    padding: 8px 6px;
-    text-align: center;
-    box-shadow: 0 1px 3px rgba(236, 72, 153, 0.08);
+    border-radius: 14px;
+    padding: 12px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: -10px; right: -10px;
+    width: 50px; height: 50px;
+    background: var(--grad-soft);
+    border-radius: 50%;
+    opacity: 0.6;
   }
   .stat-num {
-    font-size: 18px;
-    font-weight: 700;
-    background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%);
+    font-size: 26px;
+    font-weight: 800;
+    background: var(--grad);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    line-height: 1.1;
+    position: relative;
   }
-  .stat-label { font-size: 10px; color: #6b7280; margin-top: 1px; }
+  .stat-num small { font-size: 12px; opacity: 0.7; font-weight: 600; }
+  .stat-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    font-weight: 600;
+    position: relative;
+  }
+  .stat-icon {
+    position: absolute;
+    top: 8px; right: 12px;
+    font-size: 18px;
+    opacity: 0.5;
+  }
 
-  /* ========== 空の状態 ========== */
+  /* ========== カレンダーヒートマップ ========== */
+  .calendar-wrap { overflow-x: auto; padding-bottom: 4px; }
+  .calendar-grid {
+    display: grid;
+    grid-template-rows: repeat(7, 12px);
+    grid-auto-flow: column;
+    grid-auto-columns: 12px;
+    gap: 2px;
+    padding: 4px;
+  }
+  .heat-cell {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    background: #f3f4f6;
+  }
+  .heat-cell.l1 { background: #fce7f3; }
+  .heat-cell.l2 { background: #f9a8d4; }
+  .heat-cell.l3 { background: #ec4899; }
+  .heat-cell.l4 { background: #be185d; }
+
+  /* ========== 円グラフ系コンテナ ========== */
+  .chart-wrap { position: relative; height: 200px; padding-top: 8px; }
+
+  /* ========== ライトボックス ========== */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.95);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .lightbox.show { display: flex; }
+  .lightbox-img-wrap {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    touch-action: pan-y pinch-zoom;
+  }
+  .lightbox img { max-width: 100%; max-height: 90vh; object-fit: contain; }
+  .lightbox .close {
+    position: absolute;
+    top: max(16px, env(safe-area-inset-top));
+    right: 16px;
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 22px;
+    cursor: pointer;
+    z-index: 10;
+  }
+  .lightbox .arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    border: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    font-size: 22px;
+    cursor: pointer;
+    z-index: 10;
+  }
+  .lightbox .arrow.prev { left: 16px; }
+  .lightbox .arrow.next { right: 16px; }
+  .lightbox-counter {
+    position: absolute;
+    top: max(16px, env(safe-area-inset-top));
+    left: 50%;
+    transform: translateX(-50%);
+    color: #fff;
+    font-size: 13px;
+    background: rgba(0,0,0,0.5);
+    padding: 4px 12px;
+    border-radius: 12px;
+    z-index: 10;
+  }
+
+  /* ========== 空状態 ========== */
   .empty {
     text-align: center;
-    padding: 40px 20px;
+    padding: 50px 20px;
     color: #9ca3af;
   }
-  .empty .emoji { font-size: 48px; margin-bottom: 12px; }
-  .empty .msg { font-size: 14px; margin-bottom: 16px; }
+  .empty .emoji { font-size: 56px; margin-bottom: 12px; }
+  .empty .msg { font-size: 14px; margin-bottom: 16px; line-height: 1.7; }
 
   /* ========== トースト ========== */
   .toast {
@@ -356,64 +630,159 @@
     transform: translateX(-50%) translateY(20px);
     background: #1f2937;
     color: #fff;
-    padding: 10px 18px;
-    border-radius: 22px;
+    padding: 12px 20px;
+    border-radius: 24px;
     font-size: 13px;
     opacity: 0;
-    transition: all 0.3s;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     pointer-events: none;
     z-index: 300;
     white-space: nowrap;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
   }
   .toast.show {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
   }
 
-  /* ========== みんなの現場（モック）バッジ ========== */
-  .mock-badge {
-    background: #fef3c7;
-    color: #92400e;
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 11px;
-    margin-bottom: 12px;
-    border-left: 3px solid #f59e0b;
+  /* ========== 詳細モーダル ========== */
+  .modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 150;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
   }
-  .other-user {
+  .modal.show { display: flex; animation: fadeIn 0.2s; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .modal-content {
+    background: #fff;
+    width: 100%;
+    max-width: 480px;
+    max-height: 90vh;
+    border-radius: 20px 20px 0 0;
+    overflow-y: auto;
+    animation: slideUp 0.25s ease-out;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal-handle {
+    width: 40px;
+    height: 4px;
+    background: #d1d5db;
+    border-radius: 2px;
+    margin: 8px auto 4px;
+  }
+  .modal-header {
+    padding: 8px 16px 12px;
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .modal-title { font-size: 15px; font-weight: 700; }
+  .modal-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 22px;
+    cursor: pointer;
+    padding: 4px 8px;
+  }
+  .modal-body { padding: 14px 16px; }
+
+  /* ========== バナー ========== */
+  .banner {
+    background: var(--grad-soft);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    font-size: 12px;
+    color: #831843;
+    line-height: 1.6;
+    display: flex;
+    align-items: flex-start;
     gap: 8px;
   }
-  .other-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #c084fc, #f472b6);
+  .banner .b-icon { font-size: 16px; flex-shrink: 0; }
+  .banner.info {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+
+  /* ========== 推し詳細ヘッダー ========== */
+  .oshi-detail-header {
+    background: var(--grad);
     color: #fff;
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 12px;
+    text-align: center;
+    box-shadow: var(--shadow-lg);
+  }
+  .oshi-detail-header .big-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    margin: 0 auto 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 13px;
-    font-weight: 700;
+    font-size: 28px;
+    font-weight: 800;
   }
-  .other-name { font-size: 13px; font-weight: 600; }
+  .oshi-detail-header .name { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+  .oshi-detail-header .summary { font-size: 12px; opacity: 0.9; }
 
-  /* ========== 戻るボタン ========== */
-  .back-btn {
-    background: none;
+  /* ========== ローディング ========== */
+  .loading {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--pink-light);
+    border-top-color: var(--pink);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ========== ヘルパー ========== */
+  .text-muted { color: var(--text-muted); }
+  .text-sm { font-size: 12px; }
+  .mt-8 { margin-top: 8px; }
+  .mt-12 { margin-top: 12px; }
+  .gap-6 { gap: 6px; }
+  .flex { display: flex; }
+  .flex-col { flex-direction: column; }
+  .items-center { align-items: center; }
+
+  /* ========== タブ（フィルタモーダル内） ========== */
+  .tab-row { display: flex; gap: 6px; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+  .tab-btn {
     border: none;
-    color: #ec4899;
-    font-size: 14px;
+    background: none;
+    padding: 8px 14px;
+    font-size: 13px;
     font-weight: 600;
+    color: var(--text-muted);
     cursor: pointer;
-    padding: 8px 0;
-    margin-bottom: 8px;
+    border-bottom: 2px solid transparent;
     font-family: inherit;
   }
+  .tab-btn.active { color: var(--pink); border-bottom-color: var(--pink); }
 </style>
 </head>
 <body>
+
+<!-- スプラッシュ -->
+<div id="splash">
+  <div class="logo">💗</div>
+  <div class="name">MY押しログ</div>
+  <div class="tagline">大切な現場の記憶を残そう</div>
+</div>
 
 <header class="app-header">
   <h1>MY押しログ <span class="heart">💗</span></h1>
@@ -423,33 +792,38 @@
 <!-- トップナビ -->
 <nav class="top-nav">
   <button class="nav-btn active" data-view="timeline">
-    <span class="nav-icon">🏠</span>
-    <span>タイムライン</span>
+    <span class="nav-icon">🏠</span><span>ホーム</span>
   </button>
   <button class="nav-btn" data-view="oshi">
-    <span class="nav-icon">⭐</span>
-    <span>推し</span>
+    <span class="nav-icon">⭐</span><span>推し</span>
   </button>
   <button class="nav-btn" data-view="add">
-    <span class="nav-icon">＋</span>
-    <span>記録</span>
+    <span class="nav-icon">＋</span><span>記録</span>
   </button>
-  <button class="nav-btn" data-view="community">
-    <span class="nav-icon">🌸</span>
-    <span>みんな</span>
+  <button class="nav-btn" data-view="stats">
+    <span class="nav-icon">📊</span><span>統計</span>
   </button>
   <button class="nav-btn" data-view="settings">
-    <span class="nav-icon">⚙️</span>
-    <span>設定</span>
+    <span class="nav-icon">⚙️</span><span>設定</span>
   </button>
 </nav>
 
 <!-- ============================== -->
-<!-- タイムライン -->
+<!-- ホーム/タイムライン -->
 <!-- ============================== -->
 <div class="view active" id="timelineView">
   <div class="container">
-    <div class="stats-grid" id="statsGrid"></div>
+    <div class="search-bar" id="searchBar">
+      <span class="icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="推し・会場・コメントから検索…">
+      <button class="clear-btn" id="searchClear">×</button>
+    </div>
+
+    <div class="filter-scroll" id="filterScroll">
+      <button class="filter-chip active" data-filter="all">すべて</button>
+      <!-- 動的に推し・会場・年フィルタが追加される -->
+    </div>
+
     <div id="timelineList"></div>
   </div>
 </div>
@@ -461,11 +835,19 @@
   <div class="container">
     <div class="card">
       <div style="display:flex; gap:8px;">
-        <input type="text" class="input" id="newOshiName" placeholder="推しの名前を追加" style="flex:1;">
+        <input type="text" class="input" id="newOshiName" placeholder="推しの名前を追加">
         <button class="btn btn-primary" id="addOshiBtn">追加</button>
       </div>
     </div>
     <div id="oshiList"></div>
+  </div>
+</div>
+
+<!-- 推し詳細ビュー -->
+<div class="view" id="oshiDetailView">
+  <div class="container">
+    <button class="btn btn-ghost" onclick="switchView('oshi')" style="margin-bottom:8px;">← 戻る</button>
+    <div id="oshiDetailContent"></div>
   </div>
 </div>
 
@@ -475,18 +857,17 @@
 <div class="view" id="addView">
   <div class="container">
     <div class="card">
-      <h2 style="font-size:16px; margin-bottom:14px; color:#374151;">現場を記録する</h2>
-
+      <h2 style="font-size:16px; margin-bottom:12px;">現場を記録する 🎤</h2>
       <input type="hidden" id="editingId" value="">
 
       <div class="field">
         <label>推し<span class="req">*</span></label>
-        <div class="oshi-chip-list" id="oshiChipList"></div>
+        <div class="chip-list" id="oshiChipList"></div>
       </div>
 
       <div class="field">
         <label>現場日<span class="req">*</span></label>
-        <input type="date" class="input" id="eventDatetime">
+        <input type="date" class="input" id="eventDate">
       </div>
 
       <div class="field">
@@ -502,14 +883,17 @@
       </div>
 
       <div class="field">
-        <label>写真</label>
+        <label>写真 <span class="text-muted text-sm">(何枚でもOK)</span></label>
         <input type="file" id="photoInput" accept="image/*" multiple style="display:none;">
         <div class="photo-uploader" id="photoUploader">
           <div class="icon">📷</div>
-          <div style="font-size:13px; font-weight:600; color:#ec4899; margin-top:4px;">タップして写真を追加</div>
-          <div class="hint">複数選択OK / 自動でリサイズされます</div>
+          <div style="font-size:13px; font-weight:700; color:var(--pink); margin-top:4px;">タップして写真を追加</div>
+          <div class="hint">複数選択OK / 自動でリサイズして保存</div>
         </div>
         <div class="photo-preview-grid" id="photoPreview"></div>
+        <div id="uploadingHint" style="display:none; text-align:center; margin-top:8px; color:var(--text-muted); font-size:12px;">
+          <span class="loading"></span> 圧縮しています…
+        </div>
       </div>
 
       <div class="field">
@@ -517,22 +901,49 @@
         <textarea class="textarea" id="eventComment" placeholder="今日の現場どうだった？ MCで言ってたこと・印象的な瞬間など…"></textarea>
       </div>
 
-      <button class="btn btn-primary btn-block" id="saveBtn" style="margin-top:8px;">保存する</button>
+      <button class="btn btn-primary btn-block btn-lg" id="saveBtn">保存する 💗</button>
       <button class="btn btn-secondary btn-block" id="cancelEditBtn" style="margin-top:8px; display:none;">編集をキャンセル</button>
     </div>
   </div>
 </div>
 
 <!-- ============================== -->
-<!-- みんなの現場（モック） -->
+<!-- 統計 -->
 <!-- ============================== -->
-<div class="view" id="communityView">
+<div class="view" id="statsView">
   <div class="container">
-    <div class="mock-badge">
-      <strong>※ 共有機能はモックアップ表示です</strong><br>
-      実装時はクラウドDB連携で他ユーザーの実際の投稿が表示されます
+    <div class="stats-grid" id="statsGrid"></div>
+
+    <div class="card">
+      <div class="section-title">📅 参戦カレンダー（過去1年）</div>
+      <div class="calendar-wrap">
+        <div class="calendar-grid" id="heatmap"></div>
+      </div>
+      <div style="display:flex; align-items:center; gap:6px; font-size:11px; color:var(--text-muted); margin-top:6px;">
+        少ない
+        <span class="heat-cell"></span>
+        <span class="heat-cell l1"></span>
+        <span class="heat-cell l2"></span>
+        <span class="heat-cell l3"></span>
+        <span class="heat-cell l4"></span>
+        多い
+      </div>
     </div>
-    <div id="communityList"></div>
+
+    <div class="card">
+      <div class="section-title">⭐ 推し別 参戦回数</div>
+      <div class="chart-wrap"><canvas id="chartByOshi"></canvas></div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">📈 月別 参戦回数</div>
+      <div class="chart-wrap"><canvas id="chartByMonth"></canvas></div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">🏟️ よく行く会場 TOP5</div>
+      <div id="topVenues"></div>
+    </div>
   </div>
 </div>
 
@@ -542,55 +953,175 @@
 <div class="view" id="settingsView">
   <div class="container">
     <div class="card">
-      <h2 style="font-size:15px; margin-bottom:12px;">データ管理</h2>
+      <div class="section-title">☁️ クラウド同期と共有</div>
+      <p class="text-sm text-muted" style="line-height:1.7; margin-bottom:10px;">
+        現在はこの端末のみで利用できます。<br>
+        他端末との同期や、同じ現場の人と投稿を共有する機能は今後追加予定です。
+      </p>
+      <button class="btn btn-soft btn-block" id="cloudInfoBtn">クラウド連携について</button>
+    </div>
+
+    <div class="card">
+      <div class="section-title">💾 データ管理</div>
       <button class="btn btn-secondary btn-block" id="exportDataBtn" style="margin-bottom:8px;">バックアップ（JSONエクスポート）</button>
       <button class="btn btn-secondary btn-block" id="importDataBtn" style="margin-bottom:8px;">復元（JSONインポート）</button>
       <input type="file" id="importFile" accept=".json" style="display:none;">
-      <button class="btn btn-secondary btn-block" id="seedBtn" style="margin-bottom:8px;">サンプルデータを投入</button>
+      <button class="btn btn-soft btn-block" id="seedBtn" style="margin-bottom:8px;">サンプルデータを投入</button>
       <button class="btn btn-danger btn-block" id="clearAllBtn">全データを削除</button>
     </div>
+
     <div class="card">
-      <h2 style="font-size:15px; margin-bottom:8px;">このアプリについて</h2>
-      <p style="font-size:13px; color:#6b7280; line-height:1.7;">
-        押し活の現場記録アプリ（デモ版）。<br>
-        データはこのブラウザ内にのみ保存されます。<br>
-        他ユーザーとの共有機能を実装する場合は、クラウド連携が必要です。
+      <div class="section-title">📦 ストレージ使用状況</div>
+      <div id="storageInfo" class="text-sm text-muted"></div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">ℹ️ このアプリについて</div>
+      <p class="text-sm text-muted" style="line-height:1.7;">
+        MY押しログは押し活の現場記録のためのアプリです。<br>
+        Ver 2.0 - IndexedDB対応 / 写真無制限 / 検索機能 / 統計機能<br>
+        データはこの端末内（IndexedDB）に保存されます。
       </p>
     </div>
   </div>
 </div>
 
-
 <!-- ライトボックス -->
 <div class="lightbox" id="lightbox">
-  <button class="close" onclick="document.getElementById('lightbox').classList.remove('show')">×</button>
-  <img id="lightboxImg" src="" alt="">
+  <div class="lightbox-counter" id="lightboxCounter">1 / 1</div>
+  <button class="close" id="lightboxClose">×</button>
+  <button class="arrow prev" id="lightboxPrev">‹</button>
+  <button class="arrow next" id="lightboxNext">›</button>
+  <div class="lightbox-img-wrap">
+    <img id="lightboxImg" src="" alt="">
+  </div>
+</div>
+
+<!-- 詳細モーダル（投稿詳細） -->
+<div class="modal" id="postModal">
+  <div class="modal-content">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">記録の詳細</div>
+      <button class="modal-close" onclick="closeModal('postModal')">×</button>
+    </div>
+    <div class="modal-body" id="postModalBody"></div>
+  </div>
+</div>
+
+<!-- クラウド情報モーダル -->
+<div class="modal" id="cloudModal">
+  <div class="modal-content">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">クラウド連携について ☁️</div>
+      <button class="modal-close" onclick="closeModal('cloudModal')">×</button>
+    </div>
+    <div class="modal-body">
+      <p style="line-height:1.7; font-size:13px; color:#374151;">
+        現在のアプリはローカル保存（IndexedDB）で動作しています。<br>
+        以下の機能を追加するにはクラウド連携が必要です。
+      </p>
+      <ul style="margin:14px 0; padding-left:20px; font-size:13px; line-height:2;">
+        <li>📱 複数端末（PC・スマホ）でデータ同期</li>
+        <li>👥 同じ現場の人の投稿を見る</li>
+        <li>💗 いいね・コメント機能</li>
+        <li>🔒 端末故障時のデータ保護</li>
+      </ul>
+      <div class="banner info">
+        <span class="b-icon">💡</span>
+        <div>
+          推奨はFirebase（無料枠で十分運用可能）。<br>
+          認証・データベース・写真ストレージが揃っており、<br>
+          このアプリのコードに少しの追記で連携できます。<br>
+          ご希望があればクラウド版を構築します！
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-const REC_KEY = 'oshi_records_v1';
-const OSHI_KEY = 'oshi_list_v1';
+// ===========================================================
+// IndexedDB Wrapper
+// ===========================================================
+const DB_NAME = 'oshilog_v2';
+const DB_VERSION = 1;
+let db = null;
 
-let records = JSON.parse(localStorage.getItem(REC_KEY) || '[]');
-let oshiList = JSON.parse(localStorage.getItem(OSHI_KEY) || '[]');
-let currentPhotos = []; // 編集中の写真（base64配列）
-let selectedOshi = null;
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onerror = () => reject(req.error);
+    req.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains('records')) {
+        const s = d.createObjectStore('records', { keyPath: 'id' });
+        s.createIndex('byOshi', 'oshi');
+        s.createIndex('byDate', 'date');
+        s.createIndex('byVenue', 'venue');
+      }
+      if (!d.objectStoreNames.contains('photos')) {
+        const s = d.createObjectStore('photos', { keyPath: 'id' });
+        s.createIndex('byRecord', 'recordId');
+      }
+      if (!d.objectStoreNames.contains('oshi')) {
+        d.createObjectStore('oshi', { keyPath: 'name' });
+      }
+    };
+    req.onsuccess = () => { db = req.result; resolve(db); };
+  });
+}
 
-const saveRec = () => localStorage.setItem(REC_KEY, JSON.stringify(records));
-const saveOshi = () => localStorage.setItem(OSHI_KEY, JSON.stringify(oshiList));
+function tx(stores, mode = 'readonly') {
+  return db.transaction(stores, mode);
+}
+function pAll(req) {
+  return new Promise((res, rej) => { req.onsuccess = () => res(req.result); req.onerror = () => rej(req.error); });
+}
 
+// records
+async function getAllRecords() { return pAll(tx('records').objectStore('records').getAll()); }
+async function getRecord(id) { return pAll(tx('records').objectStore('records').get(id)); }
+async function putRecord(r) { return pAll(tx('records', 'readwrite').objectStore('records').put(r)); }
+async function delRecord(id) {
+  // delete photos too
+  const t = tx(['records', 'photos'], 'readwrite');
+  const photos = await pAll(t.objectStore('photos').index('byRecord').getAllKeys(id));
+  photos.forEach(k => t.objectStore('photos').delete(k));
+  return pAll(t.objectStore('records').delete(id));
+}
+
+// photos
+async function getPhoto(id) { return pAll(tx('photos').objectStore('photos').get(id)); }
+async function getPhotosByRecord(recordId) { return pAll(tx('photos').objectStore('photos').index('byRecord').getAll(recordId)); }
+async function putPhoto(p) { return pAll(tx('photos', 'readwrite').objectStore('photos').put(p)); }
+async function delPhoto(id) { return pAll(tx('photos', 'readwrite').objectStore('photos').delete(id)); }
+
+// oshi
+async function getAllOshi() { return pAll(tx('oshi').objectStore('oshi').getAll()); }
+async function putOshi(o) { return pAll(tx('oshi', 'readwrite').objectStore('oshi').put(o)); }
+async function delOshi(name) { return pAll(tx('oshi', 'readwrite').objectStore('oshi').delete(name)); }
+
+// ===========================================================
+// Util
+// ===========================================================
 const pad = n => String(n).padStart(2, '0');
 const escapeHtml = s => String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,9);
 const fmtDate = (iso) => {
   if (!iso) return '';
-  // YYYY-MM-DD or ISO datetime
-  const datePart = iso.length >= 10 ? iso.slice(0, 10) : iso;
-  const [y, m, d] = datePart.split('-');
-  if (!y) return iso;
-  return `${y}/${m}/${d}`;
+  const d = (iso.length >= 10 ? iso.slice(0,10) : iso).split('-');
+  return `${d[0]}/${d[1]}/${d[2]}`;
+};
+const fmtDateLong = (iso) => {
+  if (!iso) return '';
+  const d = (iso.length >= 10 ? iso.slice(0,10) : iso).split('-');
+  const dt = new Date(`${d[0]}-${d[1]}-${d[2]}T00:00`);
+  const youbi = ['日','月','火','水','木','金','土'][dt.getDay()];
+  return `${parseInt(d[0])}年${parseInt(d[1])}月${parseInt(d[2])}日(${youbi})`;
 };
 const todayLocal = () => {
   const d = new Date();
@@ -601,142 +1132,489 @@ function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2000);
+  setTimeout(() => t.classList.remove('show'), 2200);
 }
 
-// ========== ナビゲーション ==========
+// ===========================================================
+// State
+// ===========================================================
+let records = [];
+let oshiList = [];
+let currentPhotos = []; // {id?, blob/dataUrl, isNew}
+let selectedOshi = null;
+let activeFilter = 'all';
+let searchQuery = '';
+let lightboxItems = [];
+let lightboxIdx = 0;
+let blobUrls = new Map(); // photoId -> objectURL
+
+// ===========================================================
+// 起動
+// ===========================================================
+async function bootstrap() {
+  await openDB();
+  await migrateFromLocalStorage();
+  await loadAll();
+  initUI();
+  hideSplash();
+}
+
+async function migrateFromLocalStorage() {
+  // 旧バージョン (v1) からのデータを移行
+  const oldRec = localStorage.getItem('oshi_records_v1');
+  const oldOshi = localStorage.getItem('oshi_list_v1');
+  if (!oldRec && !oldOshi) return;
+  try {
+    const recs = JSON.parse(oldRec || '[]');
+    const oshs = JSON.parse(oldOshi || '[]');
+    if (recs.length === 0 && oshs.length === 0) return;
+    // 既にIndexedDBにあるなら何もしない
+    const existing = await getAllRecords();
+    if (existing.length > 0) return;
+    for (const o of oshs) await putOshi({ name: o, createdAt: new Date().toISOString() });
+    for (const r of recs) {
+      const photoIds = [];
+      for (const dataUrl of (r.photos || [])) {
+        const id = uid();
+        const blob = await dataUrlToBlob(dataUrl);
+        await putPhoto({ id, recordId: r.id, blob, mimeType: blob.type, createdAt: r.createdAt || new Date().toISOString() });
+        photoIds.push(id);
+      }
+      const newR = {
+        id: r.id,
+        oshi: r.oshi,
+        date: (r.datetime || '').slice(0, 10),
+        tour: r.tour || '',
+        venue: r.venue,
+        comment: r.comment || '',
+        photoIds,
+        createdAt: r.createdAt,
+        updatedAt: r.updatedAt
+      };
+      await putRecord(newR);
+    }
+    // 移行完了でlocalStorage削除
+    localStorage.removeItem('oshi_records_v1');
+    localStorage.removeItem('oshi_list_v1');
+    showToast('旧データを移行しました 💗');
+  } catch (e) {
+    console.error('migration failed', e);
+  }
+}
+
+async function dataUrlToBlob(dataUrl) {
+  const r = await fetch(dataUrl);
+  return await r.blob();
+}
+
+async function loadAll() {
+  records = await getAllRecords();
+  oshiList = (await getAllOshi()).map(o => o.name);
+}
+
+function hideSplash() {
+  setTimeout(() => document.getElementById('splash').classList.add('hidden'), 800);
+}
+
+// ===========================================================
+// ナビゲーション
+// ===========================================================
 function switchView(name) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById(name + 'View').classList.add('active');
-  document.querySelector(`.nav-btn[data-view="${name}"]`).classList.add('active');
+  const view = document.getElementById(name + 'View');
+  if (view) view.classList.add('active');
+  const btn = document.querySelector(`.nav-btn[data-view="${name}"]`);
+  if (btn) btn.classList.add('active');
   window.scrollTo(0, 0);
   if (name === 'timeline') renderTimeline();
   if (name === 'oshi') renderOshiPage();
   if (name === 'add') prepareAddForm();
-  if (name === 'community') renderCommunity();
+  if (name === 'stats') renderStats();
+  if (name === 'settings') renderStorageInfo();
 }
-document.querySelectorAll('.nav-btn').forEach(btn => {
-  btn.addEventListener('click', () => switchView(btn.dataset.view));
-});
+window.switchView = switchView;
 
-// ========== 推し管理 ==========
+function initUI() {
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchView(btn.dataset.view));
+  });
+  // 検索
+  const search = document.getElementById('searchInput');
+  let searchTimer;
+  search.addEventListener('input', e => {
+    document.getElementById('searchBar').classList.toggle('has-text', !!e.target.value);
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      searchQuery = e.target.value.trim().toLowerCase();
+      renderTimeline();
+    }, 200);
+  });
+  document.getElementById('searchClear').addEventListener('click', () => {
+    search.value = '';
+    searchQuery = '';
+    document.getElementById('searchBar').classList.remove('has-text');
+    renderTimeline();
+  });
+
+  // 推し追加
+  document.getElementById('addOshiBtn').addEventListener('click', addOshiFromInput);
+  document.getElementById('newOshiName').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addOshiFromInput();
+  });
+
+  // 写真アップロード
+  document.getElementById('photoUploader').addEventListener('click', () => {
+    document.getElementById('photoInput').click();
+  });
+  document.getElementById('photoInput').addEventListener('change', handlePhotoUpload);
+
+  // 保存
+  document.getElementById('saveBtn').addEventListener('click', saveRecord);
+  document.getElementById('cancelEditBtn').addEventListener('click', () => {
+    resetAddForm();
+    switchView('timeline');
+  });
+
+  // 設定
+  document.getElementById('exportDataBtn').addEventListener('click', exportData);
+  document.getElementById('importDataBtn').addEventListener('click', () => document.getElementById('importFile').click());
+  document.getElementById('importFile').addEventListener('change', importData);
+  document.getElementById('seedBtn').addEventListener('click', seedSample);
+  document.getElementById('clearAllBtn').addEventListener('click', clearAll);
+  document.getElementById('cloudInfoBtn').addEventListener('click', () => openModal('cloudModal'));
+
+  // ライトボックス
+  document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+  document.getElementById('lightboxPrev').addEventListener('click', () => navLightbox(-1));
+  document.getElementById('lightboxNext').addEventListener('click', () => navLightbox(1));
+  document.getElementById('lightbox').addEventListener('click', e => {
+    if (e.target.id === 'lightbox' || e.target.classList.contains('lightbox-img-wrap')) closeLightbox();
+  });
+  document.addEventListener('keydown', e => {
+    if (!document.getElementById('lightbox').classList.contains('show')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft') navLightbox(-1);
+    if (e.key === 'ArrowRight') navLightbox(1);
+  });
+
+  renderTimeline();
+}
+
+// ===========================================================
+// Photo URL Helper (IndexedDB Blob -> Object URL)
+// ===========================================================
+async function getPhotoUrl(id) {
+  if (blobUrls.has(id)) return blobUrls.get(id);
+  const photo = await getPhoto(id);
+  if (!photo) return '';
+  const url = URL.createObjectURL(photo.blob);
+  blobUrls.set(id, url);
+  return url;
+}
+
+// ===========================================================
+// タイムライン
+// ===========================================================
+function getFilteredRecords() {
+  let list = [...records];
+  // フィルタ
+  if (activeFilter !== 'all') {
+    const [type, value] = activeFilter.split(':');
+    if (type === 'oshi') list = list.filter(r => r.oshi === value);
+    else if (type === 'venue') list = list.filter(r => r.venue === value);
+    else if (type === 'year') list = list.filter(r => (r.date || '').startsWith(value));
+  }
+  // 検索
+  if (searchQuery) {
+    list = list.filter(r =>
+      (r.oshi || '').toLowerCase().includes(searchQuery) ||
+      (r.venue || '').toLowerCase().includes(searchQuery) ||
+      (r.tour || '').toLowerCase().includes(searchQuery) ||
+      (r.comment || '').toLowerCase().includes(searchQuery)
+    );
+  }
+  return list.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+}
+
+async function renderTimeline() {
+  // フィルタチップを更新
+  renderFilterChips();
+
+  const list = getFilteredRecords();
+  const el = document.getElementById('timelineList');
+
+  if (records.length === 0) {
+    el.innerHTML = `
+      <div class="empty">
+        <div class="emoji">🎤</div>
+        <div class="msg">まだ記録がありません<br>初めての現場を記録してみよう</div>
+        <button class="btn btn-primary btn-lg" onclick="switchView('add')">＋ 記録を追加する</button>
+      </div>`;
+    return;
+  }
+  if (list.length === 0) {
+    el.innerHTML = `<div class="empty"><div class="emoji">🔍</div><div class="msg">該当する記録がありません</div></div>`;
+    return;
+  }
+
+  // レンダリング（写真は遅延ロード）
+  el.innerHTML = list.map(r => renderPostCard(r)).join('');
+  // 写真をロード
+  for (const r of list) {
+    for (let i = 0; i < (r.photoIds || []).length && i < 4; i++) {
+      const url = await getPhotoUrl(r.photoIds[i]);
+      const imgs = el.querySelectorAll(`[data-record="${r.id}"] img[data-pid="${r.photoIds[i]}"]`);
+      imgs.forEach(img => img.src = url);
+    }
+  }
+}
+
+function renderFilterChips() {
+  const wrap = document.getElementById('filterScroll');
+  const oshiCounts = {};
+  const venueCounts = {};
+  const yearCounts = {};
+  records.forEach(r => {
+    oshiCounts[r.oshi] = (oshiCounts[r.oshi] || 0) + 1;
+    venueCounts[r.venue] = (venueCounts[r.venue] || 0) + 1;
+    const y = (r.date || '').slice(0, 4);
+    if (y) yearCounts[y] = (yearCounts[y] || 0) + 1;
+  });
+  const sortedOshi = Object.entries(oshiCounts).sort((a,b) => b[1]-a[1]);
+  const sortedYears = Object.keys(yearCounts).sort().reverse();
+
+  let html = `<button class="filter-chip ${activeFilter === 'all' ? 'active' : ''}" data-filter="all">すべて (${records.length})</button>`;
+  sortedYears.forEach(y => {
+    html += `<button class="filter-chip ${activeFilter === 'year:'+y ? 'active' : ''}" data-filter="year:${y}">${y}年 (${yearCounts[y]})</button>`;
+  });
+  sortedOshi.slice(0, 8).forEach(([n, c]) => {
+    html += `<button class="filter-chip ${activeFilter === 'oshi:'+n ? 'active' : ''}" data-filter="oshi:${escapeHtml(n)}">⭐ ${escapeHtml(n)} (${c})</button>`;
+  });
+  wrap.innerHTML = html;
+  wrap.querySelectorAll('.filter-chip').forEach(c => {
+    c.addEventListener('click', () => {
+      activeFilter = c.dataset.filter;
+      renderTimeline();
+    });
+  });
+}
+
+function renderPostCard(r) {
+  const photoIds = r.photoIds || [];
+  const photoCount = photoIds.length;
+  let photosHtml = '';
+  if (photoCount > 0) {
+    let cls = 'count-1';
+    if (photoCount === 2) cls = 'count-2';
+    else if (photoCount === 3) cls = 'count-3';
+    else if (photoCount === 4) cls = 'count-4';
+    else if (photoCount > 4) cls = 'count-many';
+    const showCount = photoCount > 4 ? 3 : photoCount;
+    const showIds = photoIds.slice(0, showCount);
+    photosHtml = `
+      <div class="post-photos ${cls}">
+        ${showIds.map((pid, i) => {
+          const isLast = (i === showCount - 1) && (photoCount > 4);
+          return `<div class="${isLast ? 'more-overlay' : ''}" ${isLast ? 'data-more="+'+(photoCount-3)+'"' : ''}>
+            <img data-pid="${pid}" alt="" onclick="openLightboxFor('${r.id}', ${i})">
+          </div>`;
+        }).join('')}
+      </div>`;
+  }
+  return `
+    <div class="post" data-record="${r.id}">
+      <div class="post-header">
+        <span class="post-oshi">⭐ ${escapeHtml(r.oshi)}</span>
+        <span class="post-date">${fmtDate(r.date)}</span>
+      </div>
+      ${r.tour ? `<div class="post-tour">🎤 ${escapeHtml(r.tour)}</div>` : ''}
+      <div class="post-venue">📍 ${escapeHtml(r.venue)}</div>
+      ${photosHtml}
+      ${r.comment ? `<div class="post-comment">${escapeHtml(r.comment)}</div>` : ''}
+      <div class="post-actions">
+        <button class="btn btn-soft btn-sm" onclick="editRecordById('${r.id}')">編集</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteRecordById('${r.id}')">削除</button>
+        ${photoCount > 0 ? `<span class="post-meta">📷 ${photoCount}枚</span>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+async function openLightboxFor(recordId, startIdx) {
+  const r = records.find(x => x.id === recordId);
+  if (!r) return;
+  lightboxItems = [];
+  for (const pid of r.photoIds || []) {
+    const url = await getPhotoUrl(pid);
+    lightboxItems.push(url);
+  }
+  if (lightboxItems.length === 0) return;
+  lightboxIdx = startIdx;
+  document.getElementById('lightbox').classList.add('show');
+  updateLightbox();
+}
+window.openLightboxFor = openLightboxFor;
+
+function updateLightbox() {
+  document.getElementById('lightboxImg').src = lightboxItems[lightboxIdx];
+  document.getElementById('lightboxCounter').textContent = `${lightboxIdx + 1} / ${lightboxItems.length}`;
+  document.getElementById('lightboxPrev').style.display = lightboxItems.length > 1 ? 'block' : 'none';
+  document.getElementById('lightboxNext').style.display = lightboxItems.length > 1 ? 'block' : 'none';
+}
+function navLightbox(d) {
+  lightboxIdx = (lightboxIdx + d + lightboxItems.length) % lightboxItems.length;
+  updateLightbox();
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('show');
+}
+
+// ===========================================================
+// 推し管理
+// ===========================================================
 function renderOshiPage() {
   const el = document.getElementById('oshiList');
   if (oshiList.length === 0) {
     el.innerHTML = `<div class="empty"><div class="emoji">⭐</div><div class="msg">推しを追加して始めよう</div></div>`;
     return;
   }
+  // 推しごとの統計
   el.innerHTML = oshiList.map(name => {
-    const count = records.filter(r => r.oshi === name).length;
-    const last = records.filter(r => r.oshi === name).sort((a,b) => b.datetime.localeCompare(a.datetime))[0];
-    const initial = name.charAt(0);
+    const recs = records.filter(r => r.oshi === name);
+    const last = [...recs].sort((a,b) => (b.date||'').localeCompare(a.date||''))[0];
+    const venues = new Set(recs.map(r => r.venue)).size;
     return `
-      <div class="oshi-card">
-        <div class="oshi-avatar">${escapeHtml(initial)}</div>
+      <div class="oshi-card" onclick="showOshiDetail('${escapeHtml(name).replace(/'/g, "\\'")}')">
+        <div class="oshi-avatar">${escapeHtml(name.charAt(0))}</div>
         <div class="oshi-info">
           <div class="oshi-name">${escapeHtml(name)}</div>
           <div class="oshi-stats">
-            参戦${count}回${last ? ' / 最新：' + fmtDate(last.datetime).slice(0,10) : ''}
+            参戦${recs.length}回 / ${venues}会場${last ? ' / 最新：' + fmtDate(last.date) : ''}
           </div>
         </div>
-        <button class="btn btn-danger btn-sm" onclick="removeOshi('${escapeHtml(name).replace(/'/g, "\\'")}')">削除</button>
-      </div>
-    `;
+        <div class="oshi-arrow">›</div>
+      </div>`;
   }).join('');
 }
 
-function removeOshi(name) {
-  if (!confirm(`「${name}」を削除しますか？\n（過去の記録は残ります）`)) return;
-  oshiList = oshiList.filter(n => n !== name);
-  saveOshi();
+async function addOshiFromInput() {
+  const v = document.getElementById('newOshiName').value.trim();
+  if (!v) return;
+  if (oshiList.includes(v)) { showToast('既に登録されています'); return; }
+  await putOshi({ name: v, createdAt: new Date().toISOString() });
+  oshiList.push(v);
+  document.getElementById('newOshiName').value = '';
   renderOshiPage();
+  showToast('追加しました 💗');
+}
+
+async function showOshiDetail(name) {
+  const recs = records.filter(r => r.oshi === name).sort((a,b) => (b.date||'').localeCompare(a.date||''));
+  const venues = [...new Set(recs.map(r => r.venue))];
+  const tours = [...new Set(recs.map(r => r.tour).filter(Boolean))];
+  const totalPhotos = recs.reduce((sum, r) => sum + (r.photoIds || []).length, 0);
+
+  document.getElementById('oshiDetailContent').innerHTML = `
+    <div class="oshi-detail-header">
+      <div class="big-avatar">${escapeHtml(name.charAt(0))}</div>
+      <div class="name">${escapeHtml(name)}</div>
+      <div class="summary">参戦${recs.length}回 / ${venues.length}会場 / 写真${totalPhotos}枚</div>
+    </div>
+    ${tours.length ? `<div class="card"><div class="section-title">🎤 参戦したツアー</div>
+      <div class="chip-list">${tours.map(t => `<span class="chip">${escapeHtml(t)}</span>`).join('')}</div></div>` : ''}
+    <div class="card">
+      <div class="section-title">📍 行った会場</div>
+      <div class="chip-list">${venues.map(v => `<span class="chip">${escapeHtml(v)}</span>`).join('')}</div>
+    </div>
+    <div class="section-title" style="margin: 14px 0 8px 4px;">📅 参戦履歴</div>
+    <div id="oshiHistory">${recs.map(r => renderPostCard(r)).join('')}</div>
+    <button class="btn btn-danger btn-block" onclick="removeOshi('${escapeHtml(name).replace(/'/g, "\\'")}')" style="margin-top:14px;">この推しを削除</button>
+  `;
+  switchViewLite('oshiDetail');
+  // 写真ロード
+  for (const r of recs) {
+    for (let i = 0; i < (r.photoIds || []).length && i < 4; i++) {
+      const url = await getPhotoUrl(r.photoIds[i]);
+      document.querySelectorAll(`[data-record="${r.id}"] img[data-pid="${r.photoIds[i]}"]`).forEach(img => img.src = url);
+    }
+  }
+}
+window.showOshiDetail = showOshiDetail;
+
+function switchViewLite(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(name + 'View').classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+async function removeOshi(name) {
+  if (!confirm(`「${name}」を削除しますか？\n（過去の記録は残ります）`)) return;
+  await delOshi(name);
+  oshiList = oshiList.filter(n => n !== name);
+  switchView('oshi');
   showToast('削除しました');
 }
 window.removeOshi = removeOshi;
 
-document.getElementById('addOshiBtn').addEventListener('click', () => {
-  const v = document.getElementById('newOshiName').value.trim();
-  if (!v) return;
-  if (oshiList.includes(v)) { showToast('既に登録されています'); return; }
-  oshiList.push(v);
-  saveOshi();
-  document.getElementById('newOshiName').value = '';
-  renderOshiPage();
-  showToast('追加しました 💗');
-});
-document.getElementById('newOshiName').addEventListener('keydown', e => {
-  if (e.key === 'Enter') document.getElementById('addOshiBtn').click();
-});
-
-// ========== 記録追加 ==========
+// ===========================================================
+// 記録追加
+// ===========================================================
 function prepareAddForm() {
-  // 既に編集中ならそのまま、新規ならリセット
   if (!document.getElementById('editingId').value) {
-    document.getElementById('eventDatetime').value = todayLocal();
+    document.getElementById('eventDate').value = todayLocal();
   }
   renderOshiChips();
-  refreshVenueList();
+  refreshDatalist();
 }
-
 function renderOshiChips() {
   const el = document.getElementById('oshiChipList');
-  const chips = oshiList.map(name => `
-    <div class="oshi-chip ${selectedOshi === name ? 'selected' : ''}"
-         onclick="selectOshi('${escapeHtml(name).replace(/'/g, "\\'")}')">
-      ${escapeHtml(name)}
-    </div>
+  const chips = oshiList.map(n => `
+    <div class="chip ${selectedOshi === n ? 'selected' : ''}" onclick="selectOshi('${escapeHtml(n).replace(/'/g, "\\'")}')">${escapeHtml(n)}</div>
   `).join('');
-  el.innerHTML = chips + `
-    <div class="oshi-chip oshi-chip-add" onclick="addOshiInline()">＋ 追加</div>
-  `;
+  el.innerHTML = chips + `<div class="chip chip-add" onclick="addOshiInline()">＋ 追加</div>`;
 }
-function selectOshi(name) {
-  selectedOshi = name;
-  renderOshiChips();
-}
-function addOshiInline() {
-  const name = prompt('推しの名前を入力してください');
-  if (!name) return;
-  const trimmed = name.trim();
-  if (!trimmed) return;
-  if (!oshiList.includes(trimmed)) {
-    oshiList.push(trimmed);
-    saveOshi();
+function selectOshi(n) { selectedOshi = n; renderOshiChips(); }
+async function addOshiInline() {
+  const n = prompt('推しの名前を入力してください');
+  if (!n) return;
+  const t = n.trim();
+  if (!t) return;
+  if (!oshiList.includes(t)) {
+    await putOshi({ name: t, createdAt: new Date().toISOString() });
+    oshiList.push(t);
   }
-  selectedOshi = trimmed;
+  selectedOshi = t;
   renderOshiChips();
 }
 window.selectOshi = selectOshi;
 window.addOshiInline = addOshiInline;
 
-function refreshVenueList() {
+function refreshDatalist() {
   const venues = [...new Set(records.map(r => r.venue))].filter(Boolean);
   document.getElementById('venueList').innerHTML = venues.map(v => `<option value="${escapeHtml(v)}">`).join('');
   const tours = [...new Set(records.map(r => r.tour))].filter(Boolean);
   document.getElementById('tourList').innerHTML = tours.map(t => `<option value="${escapeHtml(t)}">`).join('');
 }
 
-// 写真アップロード
-document.getElementById('photoUploader').addEventListener('click', () => {
-  document.getElementById('photoInput').click();
-});
-document.getElementById('photoInput').addEventListener('change', async e => {
+async function handlePhotoUpload(e) {
   const files = Array.from(e.target.files);
+  if (files.length === 0) return;
+  document.getElementById('uploadingHint').style.display = 'block';
   for (const file of files) {
     try {
-      const dataUrl = await resizeImage(file, 1200, 0.75);
-      currentPhotos.push(dataUrl);
+      const blob = await resizeImageToBlob(file, 1600, 0.78);
+      currentPhotos.push({ id: uid(), blob, isNew: true });
     } catch (err) {
       console.error(err);
-      showToast('画像の読み込みに失敗しました');
     }
   }
-  renderPhotoPreview();
+  document.getElementById('uploadingHint').style.display = 'none';
+  await renderPhotoPreview();
   e.target.value = '';
-});
+}
 
-function resizeImage(file, maxSize, quality) {
+function resizeImageToBlob(file, maxSize, quality) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = e => {
@@ -749,7 +1627,7 @@ function resizeImage(file, maxSize, quality) {
         canvas.width = w; canvas.height = h;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', quality));
+        canvas.toBlob(b => b ? resolve(b) : reject(new Error('toBlob failed')), 'image/jpeg', quality);
       };
       img.onerror = reject;
       img.src = e.target.result;
@@ -759,262 +1637,338 @@ function resizeImage(file, maxSize, quality) {
   });
 }
 
-function renderPhotoPreview() {
+async function renderPhotoPreview() {
   const el = document.getElementById('photoPreview');
-  el.innerHTML = currentPhotos.map((p, i) => `
-    <div class="photo-preview">
-      <img src="${p}" alt="" onclick="openLightbox('${i}', true)">
-      <button class="remove" onclick="removePhoto(${i})">×</button>
-    </div>
-  `).join('');
+  el.innerHTML = '';
+  for (let i = 0; i < currentPhotos.length; i++) {
+    const p = currentPhotos[i];
+    let url;
+    if (p.isNew) url = URL.createObjectURL(p.blob);
+    else url = await getPhotoUrl(p.id);
+    el.innerHTML += `
+      <div class="photo-preview">
+        <img src="${url}" alt="">
+        <button class="remove" onclick="removeNewPhoto(${i})">×</button>
+      </div>`;
+  }
 }
 
-function removePhoto(i) {
+function removeNewPhoto(i) {
   currentPhotos.splice(i, 1);
   renderPhotoPreview();
 }
-window.removePhoto = removePhoto;
+window.removeNewPhoto = removeNewPhoto;
 
-function openLightbox(idx, fromPreview) {
-  const src = fromPreview ? currentPhotos[idx] : idx;
-  document.getElementById('lightboxImg').src = src;
-  document.getElementById('lightbox').classList.add('show');
-}
-window.openLightbox = openLightbox;
-
-document.getElementById('saveBtn').addEventListener('click', () => {
+async function saveRecord() {
   if (!selectedOshi) { showToast('推しを選択してください'); return; }
-  const datetime = document.getElementById('eventDatetime').value;
+  const date = document.getElementById('eventDate').value;
   const tour = document.getElementById('eventTour').value.trim();
   const venue = document.getElementById('eventVenue').value.trim();
   const comment = document.getElementById('eventComment').value.trim();
-  if (!datetime) { showToast('現場日を入力してください'); return; }
+  if (!date) { showToast('現場日を入力してください'); return; }
   if (!venue) { showToast('場所を入力してください'); return; }
 
   const editingId = document.getElementById('editingId').value;
-  const data = {
-    id: editingId || uid(),
-    oshi: selectedOshi,
-    datetime,
-    tour,
-    venue,
-    photos: [...currentPhotos],
-    comment,
-    createdAt: editingId ? records.find(r => r.id === editingId)?.createdAt : new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  };
+  const recordId = editingId || uid();
 
-  try {
-    if (editingId) {
-      const i = records.findIndex(r => r.id === editingId);
-      if (i >= 0) records[i] = data;
-      showToast('更新しました 💗');
-    } else {
-      records.push(data);
-      showToast('保存しました 💗');
+  // 写真をDBに保存
+  const photoIds = [];
+  for (const p of currentPhotos) {
+    if (p.isNew) {
+      await putPhoto({
+        id: p.id,
+        recordId,
+        blob: p.blob,
+        mimeType: p.blob.type,
+        createdAt: new Date().toISOString()
+      });
     }
-    saveRec();
-    resetAddForm();
-    switchView('timeline');
-  } catch (err) {
-    if (err.name === 'QuotaExceededError') {
-      showToast('保存容量がいっぱいです。古い記録を削除してください');
-    } else {
-      showToast('保存に失敗しました');
+    photoIds.push(p.id);
+  }
+  // 編集時、削除された写真をクリーンアップ
+  if (editingId) {
+    const old = await getRecord(editingId);
+    if (old) {
+      const removed = (old.photoIds || []).filter(id => !photoIds.includes(id));
+      for (const id of removed) {
+        await delPhoto(id);
+        if (blobUrls.has(id)) { URL.revokeObjectURL(blobUrls.get(id)); blobUrls.delete(id); }
+      }
     }
   }
-});
 
-document.getElementById('cancelEditBtn').addEventListener('click', () => {
+  const data = {
+    id: recordId,
+    oshi: selectedOshi,
+    date,
+    tour,
+    venue,
+    comment,
+    photoIds,
+    createdAt: editingId ? (await getRecord(editingId))?.createdAt : new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+  await putRecord(data);
+  await loadAll();
+  showToast(editingId ? '更新しました 💗' : '保存しました 💗');
   resetAddForm();
   switchView('timeline');
-});
+}
 
 function resetAddForm() {
   document.getElementById('editingId').value = '';
-  document.getElementById('eventDatetime').value = todayLocal();
+  document.getElementById('eventDate').value = todayLocal();
   document.getElementById('eventTour').value = '';
   document.getElementById('eventVenue').value = '';
   document.getElementById('eventComment').value = '';
   selectedOshi = null;
   currentPhotos = [];
-  renderPhotoPreview();
+  document.getElementById('photoPreview').innerHTML = '';
   document.getElementById('cancelEditBtn').style.display = 'none';
-  document.getElementById('saveBtn').textContent = '保存する';
+  document.getElementById('saveBtn').textContent = '保存する 💗';
 }
 
-function editRecord(id) {
-  const r = records.find(x => x.id === id);
+async function editRecordById(id) {
+  const r = await getRecord(id);
   if (!r) return;
   document.getElementById('editingId').value = r.id;
   selectedOshi = r.oshi;
-  // 旧形式（datetime-local）も対応
-  document.getElementById('eventDatetime').value = (r.datetime || '').slice(0, 10);
+  document.getElementById('eventDate').value = r.date;
   document.getElementById('eventTour').value = r.tour || '';
   document.getElementById('eventVenue').value = r.venue;
   document.getElementById('eventComment').value = r.comment || '';
-  currentPhotos = [...(r.photos || [])];
+  // 既存写真をロード
+  currentPhotos = [];
+  for (const pid of r.photoIds || []) {
+    const photo = await getPhoto(pid);
+    if (photo) currentPhotos.push({ id: pid, blob: photo.blob, isNew: false });
+  }
+  await renderPhotoPreview();
   document.getElementById('cancelEditBtn').style.display = 'block';
-  document.getElementById('saveBtn').textContent = '更新する';
+  document.getElementById('saveBtn').textContent = '更新する 💗';
   switchView('add');
 }
-window.editRecord = editRecord;
+window.editRecordById = editRecordById;
 
-function deleteRecord(id) {
-  if (!confirm('この記録を削除しますか？')) return;
-  records = records.filter(r => r.id !== id);
-  saveRec();
+async function deleteRecordById(id) {
+  if (!confirm('この記録を削除しますか？\n写真も一緒に削除されます。')) return;
+  // ObjectURLを解放
+  const r = await getRecord(id);
+  for (const pid of r?.photoIds || []) {
+    if (blobUrls.has(pid)) { URL.revokeObjectURL(blobUrls.get(pid)); blobUrls.delete(pid); }
+  }
+  await delRecord(id);
+  await loadAll();
   renderTimeline();
   showToast('削除しました');
 }
-window.deleteRecord = deleteRecord;
+window.deleteRecordById = deleteRecordById;
 
-// ========== タイムライン ==========
-function renderTimeline() {
-  // 統計
-  const totalEvents = records.length;
-  const uniqueOshi = new Set(records.map(r => r.oshi)).size;
-  const uniqueVenues = new Set(records.map(r => r.venue)).size;
+// ===========================================================
+// 統計
+// ===========================================================
+let chartByOshiInst, chartByMonthInst;
+
+function renderStats() {
+  const total = records.length;
+  const oshiCount = new Set(records.map(r => r.oshi)).size;
+  const venueCount = new Set(records.map(r => r.venue)).size;
+  const tourCount = new Set(records.map(r => r.tour).filter(Boolean)).size;
+  const totalPhotos = records.reduce((s, r) => s + (r.photoIds || []).length, 0);
+  const thisYear = new Date().getFullYear();
+  const thisYearCount = records.filter(r => (r.date || '').startsWith(String(thisYear))).length;
+
   document.getElementById('statsGrid').innerHTML = `
-    <div class="stat-card"><div class="stat-num">${totalEvents}</div><div class="stat-label">参戦回数</div></div>
-    <div class="stat-card"><div class="stat-num">${uniqueOshi}</div><div class="stat-label">推し</div></div>
-    <div class="stat-card"><div class="stat-num">${uniqueVenues}</div><div class="stat-label">会場</div></div>
+    <div class="stat-card"><div class="stat-icon">🎤</div><div class="stat-num">${total}<small> 回</small></div><div class="stat-label">通算 参戦回数</div></div>
+    <div class="stat-card"><div class="stat-icon">⭐</div><div class="stat-num">${oshiCount}<small> 人</small></div><div class="stat-label">推しの数</div></div>
+    <div class="stat-card"><div class="stat-icon">📍</div><div class="stat-num">${venueCount}<small> 会場</small></div><div class="stat-label">行った会場</div></div>
+    <div class="stat-card"><div class="stat-icon">🎵</div><div class="stat-num">${tourCount}<small> ツアー</small></div><div class="stat-label">参戦ツアー</div></div>
+    <div class="stat-card"><div class="stat-icon">📷</div><div class="stat-num">${totalPhotos}<small> 枚</small></div><div class="stat-label">写真総数</div></div>
+    <div class="stat-card"><div class="stat-icon">🌸</div><div class="stat-num">${thisYearCount}<small> 回</small></div><div class="stat-label">${thisYear}年の参戦</div></div>
   `;
 
-  const list = document.getElementById('timelineList');
-  if (records.length === 0) {
-    list.innerHTML = `
-      <div class="empty">
-        <div class="emoji">🎤</div>
-        <div class="msg">まだ記録がありません<br>初めての現場を記録してみよう</div>
-        <button class="btn btn-primary" onclick="switchView('add')">記録を追加</button>
-      </div>
-    `;
+  renderHeatmap();
+  renderChartByOshi();
+  renderChartByMonth();
+  renderTopVenues();
+}
+
+function renderHeatmap() {
+  const grid = document.getElementById('heatmap');
+  // 365日分のセル（月曜始まり）
+  const today = new Date();
+  const start = new Date(today);
+  start.setDate(start.getDate() - 364);
+  // 月曜から始めるためにずらす
+  const dayOfWeek = (start.getDay() + 6) % 7; // 月=0
+  start.setDate(start.getDate() - dayOfWeek);
+
+  const counts = {};
+  records.forEach(r => { if (r.date) counts[r.date] = (counts[r.date] || 0) + 1; });
+
+  let html = '';
+  let cur = new Date(start);
+  while (cur <= today) {
+    const key = `${cur.getFullYear()}-${pad(cur.getMonth()+1)}-${pad(cur.getDate())}`;
+    const n = counts[key] || 0;
+    const lvl = n === 0 ? '' : n === 1 ? 'l1' : n === 2 ? 'l2' : n === 3 ? 'l3' : 'l4';
+    html += `<div class="heat-cell ${lvl}" title="${key}: ${n}回"></div>`;
+    cur.setDate(cur.getDate() + 1);
+  }
+  grid.innerHTML = html;
+}
+
+function renderChartByOshi() {
+  const counts = {};
+  records.forEach(r => { counts[r.oshi] = (counts[r.oshi] || 0) + 1; });
+  const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0, 8);
+  if (chartByOshiInst) chartByOshiInst.destroy();
+  if (sorted.length === 0) {
+    document.querySelector('#chartByOshi').parentElement.innerHTML = '<div class="empty" style="padding:30px;"><div class="msg">データがまだありません</div></div>';
     return;
   }
-  const sorted = [...records].sort((a,b) => b.datetime.localeCompare(a.datetime));
-  list.innerHTML = sorted.map(r => renderPostCard(r)).join('');
-}
-
-function renderPostCard(r) {
-  const photoCount = (r.photos || []).length;
-  let photosHtml = '';
-  if (photoCount > 0) {
-    const cls = photoCount === 1 ? 'count-1' : photoCount === 2 ? 'count-2' : 'count-3plus';
-    const showPhotos = r.photos.slice(0, 3);
-    photosHtml = `
-      <div class="post-photos ${cls}">
-        ${showPhotos.map(p => `<img src="${p}" alt="" onclick="openLightbox('${p}', false)">`).join('')}
-      </div>
-      ${photoCount > 3 ? `<div style="text-align:right; padding:4px 14px; font-size:11px; color:#9ca3af;">他 ${photoCount - 3} 枚</div>` : ''}
-    `;
-  }
-  return `
-    <div class="post">
-      <div class="post-header">
-        <span class="post-oshi">⭐ ${escapeHtml(r.oshi)}</span>
-        <span class="post-date">${fmtDate(r.datetime)}</span>
-      </div>
-      ${r.tour ? `<div class="post-tour">🎤 ${escapeHtml(r.tour)}</div>` : ''}
-      <div class="post-venue">📍 ${escapeHtml(r.venue)}</div>
-      ${photosHtml}
-      ${r.comment ? `<div class="post-comment">${escapeHtml(r.comment)}</div>` : ''}
-      <div class="post-actions">
-        <button class="btn btn-secondary btn-sm" onclick="editRecord('${r.id}')">編集</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteRecord('${r.id}')">削除</button>
-      </div>
-    </div>
-  `;
-}
-
-// ========== みんなの現場（モック） ==========
-function renderCommunity() {
-  const el = document.getElementById('communityList');
-  // 自分が参加した会場と同じ会場のモック投稿を生成
-  const myVenues = [...new Set(records.map(r => r.venue))];
-
-  let mockPosts = [
-    {
-      user: 'ゆいぴ', avatar: 'ゆ',
-      oshi: '推し名様', venue: myVenues[0] || 'Zepp DiverCity',
-      datetime: '2026-04-28T18:30',
-      comment: '今日の現場最高だった〜！MCで○○の話してくれて泣きそうになった😭\nセトリ完璧すぎでしたね！'
+  const ctx = document.getElementById('chartByOshi');
+  chartByOshiInst = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: sorted.map(s => s[0]),
+      datasets: [{
+        data: sorted.map(s => s[1]),
+        backgroundColor: ['#ec4899', '#f472b6', '#a855f7', '#c084fc', '#d946ef', '#e879f9', '#f0abfc', '#fbcfe8'],
+        borderRadius: 6
+      }]
     },
-    {
-      user: 'まりんご', avatar: 'ま',
-      oshi: '推し名様', venue: myVenues[0] || 'Zepp DiverCity',
-      datetime: '2026-04-28T19:00',
-      comment: '初現場でしたが、めちゃくちゃ良かった！\n隣の方に教えてもらいながら楽しめました🌸'
-    },
-    {
-      user: 'のぞみ＊', avatar: 'の',
-      oshi: '別の推し', venue: myVenues[1] || '東京ドーム',
-      datetime: '2026-04-25T17:00',
-      comment: 'ドーム公演ありがとうーー！\n最後の挨拶で号泣でした😭🎤✨'
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { stepSize: 1 }, grid: { color: '#f3f4f6' } },
+        y: { grid: { display: false } }
+      }
     }
-  ];
+  });
+}
 
-  if (myVenues.length === 0) {
-    el.innerHTML = `
-      <div class="empty">
-        <div class="emoji">🌸</div>
-        <div class="msg">まずは自分の現場を記録してみよう<br>同じ会場に行った人の投稿が表示されます</div>
-      </div>
-    `;
+function renderChartByMonth() {
+  const months = {};
+  // 過去12ヶ月
+  const today = new Date();
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+    const key = `${d.getFullYear()}-${pad(d.getMonth()+1)}`;
+    months[key] = 0;
+  }
+  records.forEach(r => {
+    const k = (r.date || '').slice(0, 7);
+    if (k in months) months[k]++;
+  });
+  if (chartByMonthInst) chartByMonthInst.destroy();
+  const ctx = document.getElementById('chartByMonth');
+  chartByMonthInst = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: Object.keys(months).map(k => k.slice(5) + '月'),
+      datasets: [{
+        data: Object.values(months),
+        borderColor: '#ec4899',
+        backgroundColor: 'rgba(236, 72, 153, 0.1)',
+        fill: true,
+        tension: 0.35,
+        pointBackgroundColor: '#ec4899',
+        pointRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false } },
+        y: { ticks: { stepSize: 1 }, grid: { color: '#f3f4f6' }, beginAtZero: true }
+      }
+    }
+  });
+}
+
+function renderTopVenues() {
+  const counts = {};
+  records.forEach(r => { if (r.venue) counts[r.venue] = (counts[r.venue] || 0) + 1; });
+  const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0, 5);
+  const el = document.getElementById('topVenues');
+  if (sorted.length === 0) {
+    el.innerHTML = '<div class="text-muted text-sm" style="text-align:center; padding:14px;">データがまだありません</div>';
     return;
   }
-
-  el.innerHTML = mockPosts.map(p => `
-    <div class="post">
-      <div class="post-header">
-        <div class="other-user">
-          <div class="other-avatar">${escapeHtml(p.avatar)}</div>
-          <div>
-            <div class="other-name">${escapeHtml(p.user)}</div>
-            <div style="font-size:11px; color:#9ca3af;">${fmtDate(p.datetime)}</div>
-          </div>
+  const max = sorted[0][1];
+  el.innerHTML = sorted.map(([v, c], i) => `
+    <div style="display:flex; align-items:center; gap:8px; padding:6px 0;">
+      <div style="font-weight:700; color:var(--pink); width:24px;">${i+1}.</div>
+      <div style="flex:1; min-width:0;">
+        <div style="font-weight:600; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(v)}</div>
+        <div style="background:#f3f4f6; height:6px; border-radius:3px; margin-top:3px; overflow:hidden;">
+          <div style="background:var(--grad); height:100%; width:${(c/max*100)}%;"></div>
         </div>
-        <span class="post-oshi">⭐ ${escapeHtml(p.oshi)}</span>
       </div>
-      <div class="post-venue">📍 ${escapeHtml(p.venue)} ${myVenues.includes(p.venue) ? '<span style="font-size:11px; color:#ec4899; margin-left:4px;">同じ現場！</span>' : ''}</div>
-      <div class="post-comment">${escapeHtml(p.comment)}</div>
-      <div class="post-actions">
-        <button class="btn btn-secondary btn-sm">💗 いいね</button>
-        <button class="btn btn-secondary btn-sm">💬 コメント</button>
-      </div>
+      <div style="font-weight:700; font-size:13px;">${c}回</div>
     </div>
   `).join('');
 }
 
-// ========== 設定 ==========
-document.getElementById('exportDataBtn').addEventListener('click', () => {
-  const data = { records, oshiList, exportedAt: new Date().toISOString() };
+// ===========================================================
+// 設定
+// ===========================================================
+async function exportData() {
+  const allPhotos = await pAll(tx('photos').objectStore('photos').getAll());
+  // BlobをDataURLに変換
+  const photosForExport = [];
+  for (const p of allPhotos) {
+    const reader = new FileReader();
+    const dataUrl = await new Promise((res, rej) => {
+      reader.onload = () => res(reader.result);
+      reader.onerror = rej;
+      reader.readAsDataURL(p.blob);
+    });
+    photosForExport.push({ id: p.id, recordId: p.recordId, dataUrl, mimeType: p.mimeType, createdAt: p.createdAt });
+  }
+  const data = {
+    version: 2,
+    records,
+    oshi: oshiList,
+    photos: photosForExport,
+    exportedAt: new Date().toISOString()
+  };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `推し活ログ_バックアップ_${new Date().toISOString().slice(0,10)}.json`;
+  a.download = `MY押しログ_バックアップ_${todayLocal()}.json`;
   a.click();
   URL.revokeObjectURL(url);
   showToast('バックアップしました');
-});
+}
 
-document.getElementById('importDataBtn').addEventListener('click', () => {
-  document.getElementById('importFile').click();
-});
-document.getElementById('importFile').addEventListener('change', e => {
+async function importData(e) {
   const file = e.target.files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = ev => {
+  reader.onload = async ev => {
     try {
       const data = JSON.parse(ev.target.result);
       if (!Array.isArray(data.records)) throw new Error('形式が不正');
-      if (!confirm(`${data.records.length}件の記録を追加します。よろしいですか？`)) return;
-      const ids = new Set(records.map(r => r.id));
-      data.records.forEach(r => { if (!ids.has(r.id)) records.push(r); });
-      (data.oshiList || []).forEach(o => { if (!oshiList.includes(o)) oshiList.push(o); });
-      saveRec(); saveOshi();
+      if (!confirm(`${data.records.length}件の記録をインポートします。よろしいですか？`)) return;
+      for (const o of (data.oshi || [])) {
+        if (!oshiList.includes(o)) await putOshi({ name: o, createdAt: new Date().toISOString() });
+      }
+      for (const p of (data.photos || [])) {
+        const blob = await dataUrlToBlob(p.dataUrl);
+        await putPhoto({ id: p.id, recordId: p.recordId, blob, mimeType: p.mimeType, createdAt: p.createdAt });
+      }
+      for (const r of data.records) {
+        await putRecord(r);
+      }
+      await loadAll();
       renderTimeline();
       showToast('インポートしました');
     } catch (err) {
@@ -1023,43 +1977,84 @@ document.getElementById('importFile').addEventListener('change', e => {
   };
   reader.readAsText(file);
   e.target.value = '';
-});
+}
 
-document.getElementById('seedBtn').addEventListener('click', () => {
+async function seedSample() {
   if (!confirm('サンプルデータを投入します。よろしいですか？')) return;
   const sampleOshi = ['Mai-K', 'STAR★LIGHTS', 'りな'];
-  sampleOshi.forEach(o => { if (!oshiList.includes(o)) oshiList.push(o); });
+  for (const o of sampleOshi) {
+    if (!oshiList.includes(o)) await putOshi({ name: o, createdAt: new Date().toISOString() });
+  }
   const samples = [
-    { oshi: 'Mai-K', datetime: '2026-04-15', tour: 'Mai-K LIVE TOUR 2026 〜LOVE & SHINE〜', venue: 'Zepp DiverCity', comment: '初日ありがとう！\nアンコールで新曲披露あって最高でした😭' },
-    { oshi: 'STAR★LIGHTS', datetime: '2026-03-20', tour: 'STAR★LIGHTS Dome Tour 2026', venue: '東京ドーム', comment: 'ドーム公演！光の演出が綺麗すぎた✨\nペンライトの色を全色合わせるの楽しかった🎀' },
-    { oshi: 'りな', datetime: '2026-02-10', tour: '春の対バンツアー2026', venue: 'TSUTAYA O-EAST', comment: '対バン久々参戦！\n声出しOKでめちゃくちゃ盛り上がりました🔥' }
+    { oshi: 'Mai-K', date: '2026-04-15', tour: 'Mai-K LIVE TOUR 2026 〜LOVE & SHINE〜', venue: 'Zepp DiverCity', comment: '初日ありがとう！\nアンコールで新曲披露あって最高でした😭' },
+    { oshi: 'Mai-K', date: '2026-04-22', tour: 'Mai-K LIVE TOUR 2026 〜LOVE & SHINE〜', venue: 'Zepp Osaka Bayside', comment: '大阪公演！MCで関西弁になってかわいかった🌸' },
+    { oshi: 'STAR★LIGHTS', date: '2026-03-20', tour: 'STAR★LIGHTS Dome Tour 2026', venue: '東京ドーム', comment: 'ドーム公演！光の演出が綺麗すぎた✨\nペンライトの色を全色合わせるの楽しかった🎀' },
+    { oshi: 'STAR★LIGHTS', date: '2026-02-14', tour: 'Valentine Special Live', venue: '横浜アリーナ', comment: 'バレンタインスペシャル！\n会場全体がピンクで埋まって幸せだった💕' },
+    { oshi: 'りな', date: '2026-02-10', tour: '春の対バンツアー2026', venue: 'TSUTAYA O-EAST', comment: '対バン久々参戦！\n声出しOKでめちゃくちゃ盛り上がりました🔥' },
+    { oshi: 'Mai-K', date: '2025-12-25', tour: 'Christmas One Man Live', venue: 'LINE CUBE SHIBUYA', comment: 'クリスマス公演🎄\nラストの演出で感動しすぎて涙止まらなかった' }
   ];
-  samples.forEach(s => {
-    records.push({
-      id: uid(), ...s, photos: [],
+  for (const s of samples) {
+    await putRecord({
+      id: uid(),
+      ...s,
+      photoIds: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     });
-  });
-  saveRec(); saveOshi();
-  renderTimeline();
+  }
+  await loadAll();
   switchView('timeline');
   showToast('サンプルデータを投入しました');
-});
+}
 
-document.getElementById('clearAllBtn').addEventListener('click', () => {
+async function clearAll() {
   if (!confirm('全データを削除します。よろしいですか？')) return;
-  if (!confirm('本当に削除しますか？この操作は元に戻せません。')) return;
-  records = []; oshiList = [];
-  saveRec(); saveOshi();
+  if (!confirm('本当に削除しますか？元に戻せません。')) return;
+  for (const r of records) await delRecord(r.id);
+  for (const o of oshiList) await delOshi(o);
+  // ObjectURL解放
+  blobUrls.forEach(url => URL.revokeObjectURL(url));
+  blobUrls.clear();
+  await loadAll();
   renderTimeline();
+  switchView('timeline');
   showToast('削除しました');
+}
+
+async function renderStorageInfo() {
+  if (navigator.storage && navigator.storage.estimate) {
+    const est = await navigator.storage.estimate();
+    const used = (est.usage / 1024 / 1024).toFixed(1);
+    const quota = (est.quota / 1024 / 1024).toFixed(0);
+    const pct = (est.usage / est.quota * 100).toFixed(1);
+    document.getElementById('storageInfo').innerHTML = `
+      <div>使用容量：<strong>${used} MB</strong> / ${quota} MB (${pct}%)</div>
+      <div style="background:#f3f4f6; height:6px; border-radius:3px; margin-top:6px; overflow:hidden;">
+        <div style="background:var(--grad); height:100%; width:${pct}%;"></div>
+      </div>
+      <div style="margin-top:8px; font-size:11px;">記録: ${records.length}件 / 写真: ${records.reduce((s,r)=>s+(r.photoIds||[]).length,0)}枚</div>
+    `;
+  } else {
+    document.getElementById('storageInfo').innerHTML = `記録: ${records.length}件`;
+  }
+}
+
+// ===========================================================
+// モーダル
+// ===========================================================
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+window.openModal = openModal;
+window.closeModal = closeModal;
+
+document.querySelectorAll('.modal').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('show'); });
 });
 
-window.switchView = switchView;
-
-// 初期化
-renderTimeline();
+// ===========================================================
+// 起動
+// ===========================================================
+bootstrap();
 </script>
 </body>
 </html>
